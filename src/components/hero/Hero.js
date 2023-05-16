@@ -1,8 +1,8 @@
 import "./Hero.scss";
-import playBtn from "../../../assets/Icons/play.svg";
-import scrubBar from "../../../assets/Icons/scrub.svg";
-import fullScreen from "../../../assets/Icons/fullscreen.svg";
-import volumeUp from "../../../assets/Icons/volume_up.svg";
+import playBtn from "../../assets/Icons/play.svg";
+import scrubBar from "../../assets/Icons/scrub.svg";
+import fullScreen from "../../assets/Icons/fullscreen.svg";
+import volumeUp from "../../assets/Icons/volume_up.svg";
 // import tumbnailVideo from "../../../data/video-details.json";
 
 function Hero() {
