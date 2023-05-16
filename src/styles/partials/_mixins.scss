@@ -1,0 +1,21 @@
+
+@use "./variables" as *; 
+
+@mixin flex($justify, $align, $direction ){
+    display: flex;
+    justify-content: $justify;
+    align-items: $align;
+    flex-direction: $direction;
+}
+
+@mixin media-tablet {
+    @media (min-width: $tablet-breakpoint) {
+      @content;
+    }
+  }
+  
+  @mixin media-desktop {
+    @media (min-width: $desktop-breakpoint) {
+      @content;
+    }
+  }
