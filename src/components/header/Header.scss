@@ -28,14 +28,15 @@
         flex-direction: row;
         justify-content: space-between;
         width: 100%;
+        position: relative;
     }
 
 
     &__search-icon {
         position: absolute;
         z-index: 1;
-        top: 5rem;
-        left: 2rem;
+        top: 1.5rem;
+        left: 1rem;
         width: 7vw;
     }
 
@@ -46,8 +47,8 @@
         background-color: #fafafa;
         border-radius: 0.4rem;
         border: 0.2rem solid #e1e1e1;
-        position: relative;
         padding: 0.5rem 4rem;
+        
     }
 
     &__pro-img {
@@ -61,8 +62,8 @@
 
     &__btn-icon {
         position: absolute;
-        top: 137px;
-        left: 35px;
+        top: 15rem;
+        left: 2rem;
         z-index: 1;
     }
 
@@ -75,7 +76,6 @@
         color: white;
         font-weight: 500;
         font-size: 1.5rem;
-        position: relative;
         margin: 1rem 0;
     }
 }
