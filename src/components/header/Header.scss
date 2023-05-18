@@ -17,7 +17,7 @@
     // }
 
     &__site-logo {
-        height: 20vw;
+        height: 6.5rem;
         width: 100vw;
         padding: 2rem;
 
@@ -37,12 +37,12 @@
         z-index: 1;
         top: 1.5rem;
         left: 1rem;
-        width: 7vw;
+        width: 2rem;
     }
 
     &__search-bar {
         width: 75vw;
-        // height: 13vh;
+        height: 5rem;
         font-size: 1.5rem;
         background-color: #fafafa;
         border-radius: 0.4rem;
@@ -52,8 +52,8 @@
     }
 
     &__pro-img {
-        width: 15vw;
-        height: 15vw;
+        width: 5rem;
+        height: 5rem;
         border-radius: 50%;
         object-fit: cover;
         object-position: 20%;
@@ -69,7 +69,7 @@
 
     &__btn {
         width: 95vw;
-        height: 15vw;
+        height: 5rem;
         border: none;
         border-radius: 0.4rem;
         background-color: #0095ff;
