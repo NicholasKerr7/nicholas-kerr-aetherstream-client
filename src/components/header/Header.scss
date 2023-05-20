@@ -1,5 +1,9 @@
+@use "../../styles/partials/mixins" as *;
+@use "../../styles/partials/variables" as *;
+
+
 .header {
-    background-color: white;
+    background-color: #fafafa;
     font-weight: 600;
     display: flex;
     flex-direction: column;

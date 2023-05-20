@@ -6,7 +6,7 @@ function Hero ({ currentVideo }) {
       <div>
         <video
           className="hero__tumbnail"
-          src={currentVideo.video}
+          src=""
           poster={currentVideo.image}
           controls
         ></video>
