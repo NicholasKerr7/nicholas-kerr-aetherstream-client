@@ -6,7 +6,7 @@ import uploadIcon from "../../assets/Icons/upload.svg";
 function Header() {
   return (
     <header className="header">
-      <span>
+      <span className="header__logo-container">
         <img className="header__site-logo" src={brainflixLogo} alt="BrainFlix-logo" />
       </span>
       <div className="header__search">
