@@ -10,7 +10,7 @@
     &__container {}
 
     &__heading {
-        border-bottom: 0.2rem solid #e1e1e1;
+        border-bottom: 0.2rem solid $divider-line-color;
     }
 
     &__title {
@@ -19,7 +19,7 @@
 
     &__sub-container {
         width: 100%;
-        border-bottom: 0.2rem solid #e1e1e1;
+        border-bottom: 0.2rem solid $divider-line-color;
         display: flex;
     }
 
@@ -46,12 +46,12 @@
     // }
 
     &__date {
-        color: #afafaf;
+        color: $secondary-text-color;
     }
 
     &__likes {
         display: flex;
-        color: #afafaf;
+        color: $secondary-text-color;
     }
 
     &__likes-icon {
@@ -60,7 +60,7 @@
 
     &__views {
         display: flex;
-        color: #afafaf;
+        color: $secondary-text-color;
 
     }
 
