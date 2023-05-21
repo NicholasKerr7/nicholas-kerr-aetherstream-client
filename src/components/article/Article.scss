@@ -7,20 +7,42 @@
     width: 100%;
     font-size: 1.5rem;
 
+    @include media-tablet {
+        padding: 1rem 2rem;
+    }
+
     &__container {}
 
     &__heading {
         border-bottom: 0.2rem solid $divider-line-color;
+
+        @include media-tablet {
+            border: none;
+        }
+
     }
 
     &__title {
         font-weight: 600;
+
+        @include media-tablet {
+            font-weight: 700;
+            font-size: 3rem;
+            margin: 0;
+        }
+
     }
 
     &__sub-container {
         width: 100%;
         border-bottom: 0.2rem solid $divider-line-color;
         display: flex;
+
+        @include media-tablet {
+            display: flex;
+            justify-content: space-between;
+        }
+
     }
 
     &__info {
@@ -29,10 +51,31 @@
         flex-direction: column;
         justify-content: space-between;
 
+
+        @include media-tablet {
+            flex-direction: row;
+            justify-content: flex-start;
+
+        }
     }
+
 
     &__engagement {
         width: 50%;
+
+        @include media-tablet {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+    }
+
+    &__author-container {
+
+        @include media-tablet {
+            width: 25%;
+        }
+
     }
 
     &__author {
@@ -41,7 +84,7 @@
     }
 
     // &__date-container {
-    
+
 
     // }
 
@@ -52,6 +95,11 @@
     &__likes {
         display: flex;
         color: $secondary-text-color;
+
+        @include media-tablet {
+            width: 25%;
+        }
+
     }
 
     &__likes-icon {
@@ -61,6 +109,11 @@
     &__views {
         display: flex;
         color: $secondary-text-color;
+
+        @include media-tablet {
+            width: 35%;
+        }
+
 
     }
 

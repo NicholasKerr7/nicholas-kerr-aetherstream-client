@@ -1,26 +1,19 @@
-.hero {
+@use "../../styles/partials/mixins" as *;
+@use "../../styles/partials/variables" as *;
 
+
+.hero {
+background-color: $video-component-color;
 
 
     &__tumbnail {
         width: 100%;
 
-    }
+        @include media-tablet {
+            width: 90%;
+            margin-left: 4rem;
 
-    &__video {
-        width: 100%;
-        position: relative;
-    }
+        }
 
-
-    &__btn {
-        position: absolute;
-        bottom: 1rem;
-        width: 100%;
-        height: auto;
-        background-color: #000;
-        opacity: 50%;
-        display: flex;
-        justify-content: space-between;
     }
 }

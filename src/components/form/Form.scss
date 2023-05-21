@@ -5,6 +5,11 @@
 .form {
     padding: 1rem;
 
+    @include media-tablet {
+        padding: 2rem;
+    }
+
+
     &__subtitle {
         font-size: 1.5rem;
         font-weight: 600;
@@ -21,6 +26,10 @@
 
     &__section {
         width: 82%;
+
+        @include media-tablet {
+            width: 92%;
+        }
     }
 
     &__container {
@@ -38,6 +47,11 @@
 
     &__field {
         position: relative;
+
+    @include media-tablet {
+        display: flex;
+    }
+
     }
 
 
@@ -50,6 +64,14 @@
         border: 0.2rem solid $divider-line-color;
         padding: 1rem 1rem 8rem;
         margin-bottom: 1rem;
+
+    @include media-tablet {
+        height: 5rem;
+        padding: 1rem;
+        margin-right: 2rem;
+    
+    }
+
     }
 
 
@@ -63,6 +85,10 @@
         color: $primary-background-color;
         background-color: $primary-cta-color;
 
+        @include media-tablet {
+            width: 35%;
+        }
+
     }
 
     &__comment-icon {
@@ -70,6 +96,11 @@
         z-index: 1;
         left: 1rem;
         top: 14.5rem;
+
+        @include media-tablet {
+            left: 51rem;
+            top: 1.5rem;
+        }
 
     }
 

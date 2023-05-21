@@ -9,22 +9,19 @@
     padding: 1rem;
     justify-content: space-between;
 
-    // @include media-tablet {
-    // 
-    // }
+    @include media-tablet {
+    padding: 2rem;
+    }
 
     &__img-container {
         list-style: none;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        // @include flex(space-between, row);
 
-        // margin: 1rem;
-        // border-bottom: 0.3rem solid $divider-line-color;
 
         // @include media-tablet {
-        //  
+         
         // }
 
         // @include media-desktop {
@@ -51,15 +48,17 @@
         border: none;
         margin-bottom: 2rem;
 
-        // @include media-tablet {
-        //   
-        // }
+        @include media-tablet {
+          width: 92%;
+        }
 
         // @include media-desktop {
         //  
         // }
 
     }
+
+
 
     &__head-wrapper {
         display: flex;

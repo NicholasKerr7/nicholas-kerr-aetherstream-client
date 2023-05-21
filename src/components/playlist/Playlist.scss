@@ -5,6 +5,11 @@
 .playlist {
     padding: 1rem;
 
+    @include media-tablet {
+        padding: 2rem;
+    }
+
+
     &__title {
         font-size: 1.5rem;
         color: #e1e1e1;
@@ -16,9 +21,22 @@
         width: 100%;
         margin-bottom: 1rem;
         justify-content: space-between;
+
+        @include media-tablet {
+            justify-content: flex-start;
+        }
+
+        
     }
+
+
     &__video-container {
         width: 35%;
+
+        @include media-tablet {
+            width: 15%;
+        }
+
     }
 
     &__video {
@@ -34,6 +52,10 @@
         justify-content: space-between;
         flex-direction: column;
         width: 65%;
+
+        @include media-tablet {
+            width: 25%;
+        }
     }
 
     &__subtitle {
