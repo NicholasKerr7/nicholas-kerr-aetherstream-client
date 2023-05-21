@@ -1,2 +1,76 @@
 @use "../../styles/partials/mixins" as *;
 @use "../../styles/partials/variables" as *;
+
+
+.article {
+    padding: 1rem;
+    width: 100%;
+    font-size: 1.5rem;
+
+    &__container {}
+
+    &__heading {
+        border-bottom: 0.2rem solid #e1e1e1;
+    }
+
+    &__title {
+        font-weight: 600;
+    }
+
+    &__sub-container {
+        width: 100%;
+        border-bottom: 0.2rem solid #e1e1e1;
+        display: flex;
+    }
+
+    &__info {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+    }
+
+    &__engagement {
+        width: 50%;
+    }
+
+    &__author {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    // &__date-container {
+    
+
+    // }
+
+    &__date {
+        color: #afafaf;
+    }
+
+    &__likes {
+        display: flex;
+        color: #afafaf;
+    }
+
+    &__likes-icon {
+        margin-right: 1rem;
+    }
+
+    &__views {
+        display: flex;
+        color: #afafaf;
+
+    }
+
+    &__views-icon {
+        margin-right: 1rem;
+    }
+
+    &__description {
+        margin-top: 1rem;
+        font-size: 1.5rem;
+    }
+
+}

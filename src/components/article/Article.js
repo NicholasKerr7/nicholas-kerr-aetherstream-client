@@ -1,28 +1,38 @@
 import "./Article.scss";
+import views from "../../assets/Icons/views.svg";
+import likes from "../../assets/Icons/likes.svg";
 
-function Article() {
+function Article({ currentVideoDetails }) {
+  const date = new Date(currentVideoDetails.timestamp).toLocaleDateString();
+
   return (
-    <article className="article">
+    <article key={currentVideoDetails.id} className="article">
       <div className="article__heading">
-        <h1 className="article__title">BMX Rampage: 2021 Highlights</h1>
+        <h1 className="article__title">{currentVideoDetails.title}</h1>
       </div>
-      <div>
-        <div>
-          <h3>By Red Cow</h3>
+      <div className="article__sub-container">
+        <div className="article__info">
+          <div className="article__author-container">
+            <h3 className="article__author">{currentVideoDetails.channel}</h3>
+          </div>
+          <div className="article__date-container">
+            <p className="article__date">{date}</p>
+          </div>
         </div>
-        <div>
-          <p>07/11/2021</p>
-        </div>
-        <div>
-          <img src="../../assets/Icons/views.svg" alt="views" />
-          <p>1,001,023</p>
-        </div>
-        <div>
-          <img src="../../assets/Icons/likes.svg" alt="likes" />
-          <p>110,985</p>
+        <div className="article__engagement">
+          <div className="article__views">
+            <img className="article__views-icon" src={views} alt="views" />
+            <p className="article__views-info">{currentVideoDetails.views}</p>
+          </div>
+          <div className="article__likes">
+            <img className="article__likes-icon" src={likes} alt="likes" />
+            <p className="article__likes-info">{currentVideoDetails.likes}</p>
+          </div>
         </div>
       </div>
-      <div>On a gusty day in Southern Utah, a group of 25 daring mountain bikers blew the doors off what is possible on two wheels, unleashing some of the biggest moments the sport has ever seen. While mother nature only allowed for one full run before the conditions made it impossible to ride, that was all that was needed for event veteran Kyle Strait, who won the event for the second time -- eight years after his first Red Cow Rampage title</div>
+      <div className="article__description">
+        {currentVideoDetails.description}
+      </div>
     </article>
   );
 }

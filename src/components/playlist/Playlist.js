@@ -1,15 +1,15 @@
 import "./Playlist.scss";
 
-function Playlist({ currentVideo, playlist, changeCurrentVideos }) {
-  const fileredVideos = playlist.filter(
-    (video) => currentVideo.id !== video.id
+function Playlist({ currentVideoDetails, playlist, changeCurrentVideos }) {
+  const filteredVideos = playlist.filter(
+    (video) => currentVideoDetails.id !== video.id
   );
 
   return (
     <section className="playlist">
         <h2 className="playlist__title">NEXT VIDEOS</h2>
       {" "}
-      {fileredVideos.map((video) => {
+      {filteredVideos.map((video) => {
         return (
           <div
             key={video.id}

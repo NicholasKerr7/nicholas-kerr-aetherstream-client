@@ -1,13 +1,13 @@
 import "./Hero.scss";
 
-function Hero ({ currentVideo }) {
+function Hero ({ currentVideoDetails }) {
   return (
     <section className="hero">
       <div>
         <video
           className="hero__tumbnail"
           src=""
-          poster={currentVideo.image}
+          poster={currentVideoDetails.image}
           controls
         ></video>
       </div>
