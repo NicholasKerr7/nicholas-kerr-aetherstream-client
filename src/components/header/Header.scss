@@ -48,7 +48,6 @@
 
         @include media-tablet {
             width: 35%;
-            position: relative;
         }
     }
 
@@ -85,7 +84,7 @@
 
         @include media-tablet {
             position: absolute;
-            left: 44rem;
+            right: 2rem;
         
         }
 

@@ -17,7 +17,8 @@ function Form() {
             <h2 className="form__title">JOIN THE CONVERSATION</h2>
           </div>
           <form className="form__field">
-            <input
+            <textarea
+              rows={3}
               className="form__input"
               type="text"
               placeholder="Add a new comment"
@@ -34,5 +35,6 @@ function Form() {
     </section>
   );
 }
+
 
 export default Form;
