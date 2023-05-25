@@ -2,7 +2,11 @@ import "./Comments.scss";
 import profileImg from "../../assets/images/avatar-640.png";
 
 function Comments({ currentVideoDetails }) {
+
+  console.log(currentVideoDetails);
+
   return currentVideoDetails.comments.map((comment) => {
+    
     const date = new Date(comment.timestamp).toLocaleDateString();
 
     return (

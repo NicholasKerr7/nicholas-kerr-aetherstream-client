@@ -40,8 +40,8 @@
     }
 
     &__search {
-        display: flex;
-        flex-direction: row;
+        // display: flex;
+        // flex-direction: row;
         justify-content: space-between;
         width: 100%;
         position: relative;
@@ -84,7 +84,7 @@
 
         @include media-tablet {
             position: absolute;
-            right: 2rem;
+            right: 0;
         
         }
 

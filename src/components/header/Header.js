@@ -7,7 +7,11 @@ function Header() {
   return (
     <header className="header">
       <span className="header__logo-container">
-        <img className="header__site-logo" src={brainflixLogo} alt="BrainFlix-logo" />
+        <img
+          className="header__site-logo"
+          src={brainflixLogo}
+          alt="BrainFlix-logo"
+        />
       </span>
       <div className="header__search">
         <img
@@ -22,10 +26,10 @@ function Header() {
           placeholder="Search"
         />
         <img className="header__pro-img" src={profileImg} alt="profile img" />
-      </div>
-      <div className="header__btn-container">
         <img className="header__btn-icon" src={uploadIcon} alt="upload icon" />
-        <button className="header__btn">UPLOAD</button>
+        <div className="header__btn-container">
+          <button className="header__btn">UPLOAD</button>
+        </div>
       </div>
     </header>
   );

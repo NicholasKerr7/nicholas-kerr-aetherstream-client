@@ -1,42 +1,25 @@
 import "./App.scss";
-
-// importing components folders
-import Header from "./components/header/Header";
-import Hero from "./components/hero/Hero";
-import Article from "./components/article/Article";
-import Form from "./components/form/Form";
-import Comments from "./components/comments/Comments";
-import Playlist from "./components/playlist/Playlist";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/homepage/HomePage";
+import UploadPage from "./pages/uploadpage/UploadPage";
 
 // importing json files to be used in various folders
-import videos from "./data/video-details.json";
-import playlist from "./data/videos.json";
+// import videos from "./data/video-details.json";
+// import playlist from "./data/videos.json";
 
-import { useState } from "react";
-
-function App() {
-  const [currentVideoDetails, setcurrentVideoDetails] = useState(videos[0]);
-  // const [currentVideo, setcurrentVideo] = useState(playlist[0]);
-
-  function changeCurrentVideos(videoId) {
-    const index = videos.findIndex((video) => video.id === videoId);
-    setcurrentVideoDetails(videos[index]);
-  }
-
+const App = () => {
   return (
-    <div className="App">
-      <Header />
-      <Hero currentVideoDetails={currentVideoDetails} />
-      <Article currentVideoDetails={currentVideoDetails} />
-      <Form />
-      <Comments currentVideoDetails={currentVideoDetails} />
-      <Playlist
-        changeCurrentVideos={changeCurrentVideos}
-        currentVideoDetails={currentVideoDetails}
-        playlist={playlist}
-      />
+    <div className="app">
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/videos/:videoId" element={<HomePage />} />
+          <Route path="UploadPage" element={<UploadPage />} />
+          <Route path="*" element={"No video with that id exists"} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
-}
+};
 
 export default App;

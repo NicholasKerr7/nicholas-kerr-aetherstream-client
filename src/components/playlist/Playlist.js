@@ -1,21 +1,21 @@
+import { Link } from "react-router-dom";
 import "./Playlist.scss";
 
-function Playlist({ currentVideoDetails, playlist, changeCurrentVideos }) {
+function Playlist({ currentVideoDetails, playlist }) {
   const filteredVideos = playlist.filter(
     (video) => currentVideoDetails.id !== video.id
   );
 
   return (
     <section className="playlist">
-        <h2 className="playlist__title">NEXT VIDEOS</h2>
-      {" "}
+      <h2 className="playlist__title">NEXT VIDEOS</h2>
+
       {filteredVideos.map((video) => {
         return (
-          <div
+          <Link
+            to={`/videos/${video.id}`}
             key={video.id}
-            onClick={() => {
-              changeCurrentVideos(video.id);
-            }}
+           
             className="playlist__container"
           >
             <div className="playlist__video-container">
@@ -29,7 +29,7 @@ function Playlist({ currentVideoDetails, playlist, changeCurrentVideos }) {
               <h2 className="playlist__subtitle">{video.title}</h2>
               <p className="playlist__author">{video.channel}</p>
             </div>
-          </div>
+          </Link>
         );
       })}
     </section>
