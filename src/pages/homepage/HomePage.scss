@@ -1,0 +1,31 @@
+@use "../../styles/partials/mixins" as *;
+@use "../../styles/partials/variables" as *;
+
+.App {
+    width: 100%;
+
+    &__container {
+
+
+        @include media-desktop {
+            display: flex;
+            flex-direction: row;
+            padding: 0 10rem;
+        }
+    }
+
+    &__description {
+
+        @include media-desktop {
+            border-right: 0.2rem solid $divider-line-color;
+            width: 70%;
+        }
+    }
+
+    &__playlist {
+
+        @include media-desktop {
+            width: 40%;
+        }
+    }
+}

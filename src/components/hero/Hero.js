@@ -3,7 +3,7 @@ import "./Hero.scss";
 function Hero ({ currentVideoDetails }) {
   return (
     <section className="hero">
-      <div>
+      <div className="hero__container">
         <video
           className="hero__tumbnail"
           src=""

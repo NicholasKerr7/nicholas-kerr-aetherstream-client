@@ -5,13 +5,24 @@
 .hero {
 background-color: $video-component-color;
 
+&__container {
+
+    @include media-tablet {
+        padding: 0 2rem;
+
+    }
+    @include media-desktop {
+        padding: 0 20rem;
+
+    }
+}
+
 
     &__tumbnail {
         width: 100%;
 
         @include media-tablet {
-            width: 90%;
-            margin-left: 4rem;
+            
 
         }
 

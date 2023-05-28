@@ -1,0 +1,12 @@
+@use "../../styles/partials/mixins" as *;
+@use "../../styles/partials/variables" as *;
+
+
+.header {
+    border-bottom: 0.3rem solid $divider-line-color;
+
+    @include media-desktop {
+        border-bottom: 0.2rem solid $divider-line-color;
+
+    }
+}

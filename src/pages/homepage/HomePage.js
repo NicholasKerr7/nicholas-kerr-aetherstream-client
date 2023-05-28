@@ -1,11 +1,11 @@
-// importing components folders
-import Header from "../../components/header/Header";
-import Hero from "../../components/hero/Hero";
-import Article from "../../components/article/Article";
-import Form from "../../components/form/Form";
-import Comments from "../../components/comments/Comments";
-import Playlist from "../../components/playlist/Playlist";
-import { API_URL, API_KEY } from "../../components/utilities/Utilities";
+// importing components folders into Homepage
+import Hero from "../../components/Hero/Hero";
+import Article from "../../components/Article/Article";
+import Form from "../../components/Form/Form";
+import Comments from "../../components/Comments/Comments";
+import Playlist from "../../components/Playlist/Playlist";
+import { API_URL, API_KEY } from "../../components/Utilities/Utilities";
+import "./HomePage.scss";
 
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -28,9 +28,7 @@ function HomePage() {
   };
 
   useEffect(() => {
-    // We're on the HOMEPAGE
-    // 1. Get all videos
-    // 2. Also the full details (with comments) using the FIRST video
+    
     axios
       .get(`${API_URL}videos${API_KEY}`)
       .then((response) => {
@@ -43,10 +41,9 @@ function HomePage() {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
+  }, [videoId]);
 
   useEffect(() => {
-    // We're on the SINGLE VIDEO PAGE
 
     // If the URL doesn't have ID, stop...
     if (!videoId) {
@@ -63,12 +60,20 @@ function HomePage() {
 
   return (
     <div className="App">
-      <Header />
       <Hero currentVideoDetails={currentVideoDetails} />
-      <Article currentVideoDetails={currentVideoDetails} />
-      <Form />
-      <Comments currentVideoDetails={currentVideoDetails} />
-      <Playlist currentVideoDetails={currentVideoDetails} playlist={playlist} />
+      <div className="App__container">
+        <div className="App__description">
+        <Article currentVideoDetails={currentVideoDetails} />
+        <Form />
+        <Comments currentVideoDetails={currentVideoDetails} />
+        </div>
+        <div className="App__playlist">
+          <Playlist
+            currentVideoDetails={currentVideoDetails}
+            playlist={playlist}
+          />
+        </div>
+      </div>
     </div>
   );
 }
