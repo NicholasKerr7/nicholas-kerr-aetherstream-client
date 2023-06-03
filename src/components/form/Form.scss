@@ -10,7 +10,7 @@
         margin: 2rem;
         border-bottom: 0.1rem solid $divider-line-color;
     }
-    
+
     @include media-desktop {
         border-bottom: 0.3rem solid $divider-line-color;
         padding: 2rem;
@@ -41,7 +41,6 @@
 
         @include media-desktop {
             width: 86%;
-
         }
     }
 
@@ -92,7 +91,7 @@
             font-size: 1.8rem;
             margin-bottom: 2rem;
         }
-        
+
     }
 
     &__btn {
