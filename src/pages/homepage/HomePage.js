@@ -4,7 +4,7 @@ import Article from "../../components/Article/Article";
 import Form from "../../components/Form/Form";
 import Comments from "../../components/Comments/Comments";
 import Playlist from "../../components/Playlist/Playlist";
-import { API_URL, API_KEY } from "../../components/Utilities/Utilities";
+import { API_URL } from "../../components/utilities/Utilities";
 import "./HomePage.scss";
 
 import axios from "axios";
@@ -18,7 +18,7 @@ function HomePage() {
 
   const getVideoById = (id) => {
     axios
-      .get(`${API_URL}videos/${id}${API_KEY}`)
+      .get(`${API_URL}videos/${id}`)
       .then((response) => {
         setcurrentVideoDetails(response.data);
       })
@@ -30,7 +30,7 @@ function HomePage() {
   useEffect(() => {
     
     axios
-      .get(`${API_URL}videos${API_KEY}`)
+      .get(`${API_URL}videos`)
       .then((response) => {
         setPlaylist(response.data);
 
