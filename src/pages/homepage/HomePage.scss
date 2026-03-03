@@ -1,31 +1,42 @@
 @use "../../styles/partials/mixins" as *;
-@use "../../styles/partials/variables" as *;
 
-.App {
-    width: 100%;
+.home {
+  width: 100%;
+}
 
-    &__container {
+.home--loading {
+  min-height: 50vh;
+  display: grid;
+  place-items: center;
+}
 
+.home__status {
+  margin: 0;
+  padding: 1.2rem 1.8rem;
+  border-radius: 999px;
+  border: 0.1rem solid var(--border-soft);
+  background: rgba(12, 22, 40, 0.8);
+  color: var(--text-muted);
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+  font-size: 1.2rem;
+}
 
-        @include media-desktop {
-            display: flex;
-            flex-direction: row;
-            padding: 0 10rem;
-        }
-    }
+.home__grid {
+  margin-top: 2.2rem;
+  display: grid;
+  gap: 2rem;
+}
 
-    &__description {
+.home__primary,
+.home__rail {
+  min-width: 0;
+}
 
-        @include media-desktop {
-            border-right: 0.2rem solid $divider-line-color;
-            width: 70%;
-        }
-    }
-
-    &__playlist {
-
-        @include media-desktop {
-            width: 40%;
-        }
-    }
+@include media-desktop {
+  .home__grid {
+    margin-top: 2.8rem;
+    grid-template-columns: minmax(0, 1.8fr) minmax(31rem, 1fr);
+    align-items: start;
+  }
 }

@@ -1,10 +1,9 @@
 import "./UploadPage.scss";
 import Upload from "../../components/Upload/Upload";
 
-
 const UploadPage = () => {
   return (
-    <div>
+    <div className="upload-page">
       <Upload />
     </div>
   );

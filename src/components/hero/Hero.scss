@@ -1,30 +1,83 @@
 @use "../../styles/partials/mixins" as *;
-@use "../../styles/partials/variables" as *;
-
 
 .hero {
-background-color: $video-component-color;
-
-&__container {
-
-    @include media-tablet {
-        padding: 0 2rem;
-
-    }
-    @include media-desktop {
-        padding: 0 20rem;
-
-    }
+  position: relative;
 }
 
+.hero__container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 2rem;
+  border: 0.1rem solid var(--border-soft);
+  background: #02050c;
+  box-shadow: 0 2.4rem 5.4rem rgba(0, 0, 0, 0.45);
+}
 
-    &__tumbnail {
-        width: 100%;
+.hero__video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
 
-        @include media-tablet {
-            
+.hero__overlay {
+  position: absolute;
+  inset: auto 1.4rem 1.2rem 1.4rem;
+  padding: 1.2rem;
+  border-radius: 1.4rem;
+  border: 0.1rem solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(
+    120deg,
+    rgba(5, 14, 29, 0.85),
+    rgba(9, 28, 48, 0.78)
+  );
+  backdrop-filter: blur(0.8rem);
+}
 
-        }
+.hero__eyebrow {
+  margin: 0;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14rem;
+  color: var(--brand-a);
+  font-weight: 700;
+}
 
-    }
+.hero__title {
+  margin: 0.6rem 0 1rem;
+  font-size: 1.8rem;
+  line-height: 1.2;
+}
+
+.hero__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.hero__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.6rem;
+  padding: 0 1rem;
+  border-radius: 999px;
+  border: 0.1rem solid rgba(255, 255, 255, 0.2);
+  color: #dbe9ff;
+  font-size: 1.2rem;
+}
+
+@include media-tablet {
+  .hero__container {
+    border-radius: 2.2rem;
+  }
+
+  .hero__overlay {
+    inset: auto 2rem 1.8rem 2rem;
+    padding: 1.6rem;
+  }
+
+  .hero__title {
+    font-size: 2.6rem;
+    width: min(80%, 80rem);
+  }
 }

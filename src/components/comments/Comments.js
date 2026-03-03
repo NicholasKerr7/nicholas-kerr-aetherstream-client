@@ -2,10 +2,16 @@ import "./Comments.scss";
 import profileImg from "../../assets/images/avatar-640.png";
 
 function Comments({ currentVideoDetails }) {
+  if (!currentVideoDetails.comments.length) {
+    return <p className="comments comments--empty">No responses yet.</p>;
+  }
 
   return currentVideoDetails.comments.map((comment) => {
-    
-    const date = new Date(comment.timestamp).toLocaleDateString();
+    const date = new Date(comment.timestamp).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
 
     return (
       <section key={comment.id} className="comments">

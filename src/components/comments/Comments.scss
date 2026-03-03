@@ -1,74 +1,66 @@
 @use "../../styles/partials/mixins" as *;
-@use "../../styles/partials/variables" as *;
-
 
 .comments {
-    display: flex;
-    font-size: 1.5rem;
-    border-bottom: 0.2rem solid #e1e1e1;
-    margin: 0 1rem;
-    justify-content: space-between;
+  margin-top: 1.2rem;
+  padding: 1.4rem;
+  border-radius: 1.6rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.16);
+  background: rgba(10, 21, 38, 0.7);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: auto minmax(0, 1fr);
+}
 
-    @include media-tablet {
-        margin: 0 2rem;
-    }
+.comments--empty {
+  display: block;
+  margin-top: 1.2rem;
+  color: var(--text-muted);
+  text-align: center;
+}
 
-    @include media-desktop {
-        padding: 2rem;
-        margin: 0;
-    }
+.comments__img-container {
+  padding-top: 0.3rem;
+}
 
-    &__img-container {
-        list-style: none;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-    }
+.comments__pro-img {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 0.1rem solid var(--border-soft);
+}
 
-    &__pro-img {
-        width: 4.5rem;
-        height: 4.5rem;
-        border-radius: 50%;
-        margin-top: 1.5rem;
-    }
+.comments__container {
+  min-width: 0;
+}
 
-    &__container {
-        display: flex;
-        flex-direction: column;
-        width: 77vw;
-        border: none;
-        margin-bottom: 2rem;
+.comments__head-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+}
 
-        @include media-tablet {
-            width: 92%;
-        }
+.comments__title {
+  margin: 0;
+  font-size: 1.5rem;
+}
 
-        @include media-desktop {
-            width: 86%;
-        }
-    }
+.comments__timestamp {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
 
+.comments__paragraph {
+  margin: 0.8rem 0 0;
+  color: #dbe9ff;
+  line-height: 1.6;
+}
 
-    &__head-wrapper {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-
-    &__title {
-        font-weight: 600;
-        font-size: 1.5rem;
-    }
-
-    &__timestamp {
-        color: #e1e1e1;
-        margin: 0;
-    }
-
-    &__paragraph {
-        font-size: 2remrem;
-        margin: 0;
-    }
+@include media-tablet {
+  .comments {
+    margin-top: 1.4rem;
+    padding: 1.6rem;
+  }
 }

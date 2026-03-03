@@ -1,171 +1,193 @@
 @use "../../styles/partials/mixins" as *;
-@use "../../styles/partials/variables" as *;
-
-
-
-
 
 .upload {
-    padding: 1rem;
-    font-weight: 600;
+  padding: 1.8rem;
+  border-radius: 2rem;
+  border: 0.1rem solid var(--border-soft);
+  background: rgba(11, 22, 40, 0.74);
+  backdrop-filter: blur(0.8rem);
+}
 
-    @include media-tablet {
-        padding: 2rem;
-    }
+.upload__kicker {
+  margin: 0;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14rem;
+  color: var(--brand-a);
+  font-weight: 700;
+}
 
-    @include media-desktop {
-        padding: 2rem 12rem;
+.upload__subtitle {
+  margin: 0.7rem 0 0;
+  font-size: 2.4rem;
+  line-height: 1.2;
+}
 
-    }
+.upload__container {
+  margin-top: 1.8rem;
+  display: grid;
+  gap: 1.8rem;
+}
 
-    &__sub-content {
-        border-bottom: 0.2rem solid $divider-line-color;
-    }
+.upload__img-container {
+  display: grid;
+  gap: 1rem;
+}
 
-    &__subtitle {
-        font-weight: 600;
-        font-size: 2.5rem;
+.upload__title {
+  margin: 0;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  font-size: 1.2rem;
+}
 
-        @include media-tablet {
-            font-size: 3.5rem;
-            font-weight: 700;
-        }
+.upload__thumb-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 1.4rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.2);
+  background: rgba(13, 28, 48, 0.8);
+}
 
-    }
+.upload__preview-panel {
+  padding: 1.2rem;
+  border-radius: 1.4rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.16);
+  background: rgba(13, 27, 47, 0.78);
+}
 
-    &__container {
-        @include media-desktop {
-            display: flex;
-        }
-    }
+.upload__preview-label {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
 
-    &__field {
-        display: flex;
-        flex-direction: column;
+.upload__preview-title {
+  margin: 0.8rem 0 0;
+  font-size: 1.8rem;
+}
 
-        @include media-desktop {
-            width: 70%;
-        }
+.upload__preview-text {
+  margin: 0.7rem 0 0;
+  color: #d4e2fb;
+  line-height: 1.6;
+}
 
-    }
+.upload__field {
+  display: grid;
+}
 
+.upload__title--description {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+}
 
+.upload__input,
+.upload__input--description {
+  margin-top: 0.8rem;
+  padding: 1rem 1.2rem;
+  border-radius: 1.2rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.2);
+  background: rgba(15, 30, 53, 0.8);
+  color: var(--text-main);
+  resize: vertical;
+}
 
-    &__title {
-        font-weight: 600;
-        font-size: 1.5rem;
-        color: $secondary-text-color;
-        margin: 1rem 0;
+.upload__input {
+  min-height: 4.6rem;
+}
 
-        @include media-tablet {
-            margin-top: 2rem;
-        }
+.upload__input--description {
+  min-height: 12rem;
+}
 
-        &--description {
-            margin: 1.5rem 0 0.5rem;
-            color: $secondary-text-color;
-        }
-    }
+.upload__input:focus,
+.upload__input--description:focus {
+  outline: 0;
+  border-color: rgba(77, 197, 255, 0.9);
+  box-shadow: 0 0 0 0.2rem rgba(77, 197, 255, 0.22);
+}
 
+.upload__counter {
+  margin: 0.4rem 0 1.2rem;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  text-align: right;
+}
 
+.upload__btn-container {
+  margin-top: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
 
-    &__img-container {
-        width: 100%;
+.upload__pub-btn,
+.upload__cancel-btn {
+  min-height: 4.4rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
 
-        @include media-desktop {
-            width: 32%;
-            height: fit-content;
-            border-bottom: 0.3rem solid $divider-line-color;
-        }
+.upload__pub-btn {
+  border: 0;
+  background: linear-gradient(128deg, var(--brand-a), var(--brand-b));
+  color: #041022;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
 
-    }
+.upload__pub-btn:hover {
+  transform: translateY(-0.1rem);
+  box-shadow: 0 1rem 2rem rgba(77, 197, 255, 0.3);
+}
 
-    &__thumb-img {
-        width: 100%;
-        height: 16rem;
-        border-radius: 0.4rem;
+.upload__pub-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+  transform: none;
+  box-shadow: none;
+}
 
-        @include media-tablet {
-            width: 38rem;
-            height: 20rem;
-            margin-bottom: 1.7rem;
-            border-radius: 1rem;
-        }
+.upload__cancel-btn {
+  border: 0.1rem solid rgba(132, 187, 255, 0.25);
+  color: var(--text-main);
+  background: rgba(12, 24, 43, 0.85);
+}
 
-        @include media-desktop {
-            width: 90%;
-            height: 18rem;
-        }
-    }
+@include media-tablet {
+  .upload {
+    padding: 2.4rem;
+  }
 
+  .upload__subtitle {
+    font-size: 3rem;
+  }
 
-    &__input {
-        font-family: "avenir-next";
-        resize: none;
-        height: 5rem;
-        width: 100%;
-        font-size: 1.5rem;
-        padding: 1rem;
-        border-radius: 0.4rem;
-        background-color: $form-background-color;
-        border: 0.2rem solid $divider-line-color;
+  .upload__btn-container {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
 
-        &--description {
-            font-family: "avenir-next";
-            width: 100%;
-            height: 10rem;
-            padding: 1rem;
-            font-size: 1.5rem;
-            border-radius: 0.4rem;
-            background-color: $form-background-color;
-            border: 0.2rem solid $divider-line-color;
-        }
-    }
+  .upload__pub-btn,
+  .upload__cancel-btn {
+    min-width: 15rem;
+    padding: 0 1.4rem;
+  }
+}
 
-    &__btn-container {
-
-
-        @include media-tablet {
-            display: flex;
-            flex-direction: row-reverse;
-            margin-top: 2rem;
-            border-top: 0.3rem solid $divider-line-color;
-
-        }
-
-    }
-
-    &__pub-btn {
-        background: url(../../assets/Icons/publish.svg) left no-repeat;
-        background-position-x: 1rem;
-        background-position-y: 1.5rem;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 5rem;
-        color: $primary-background-color;
-        background-color: $primary-cta-color;
-        border-radius: 0.4rem;
-        margin-top: 1.5rem;
-        border: none;
-
-        @include media-tablet {
-            width: 15rem;
-        }
-
-    }
-
-    &__cancel-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 5rem;
-        margin-top: 1.5rem;
-        color: $primary-cta-color;
-
-        @include media-tablet {
-            width: 15rem;
-        }
-    }
+@include media-desktop {
+  .upload__container {
+    grid-template-columns: minmax(28rem, 34rem) minmax(0, 1fr);
+    align-items: start;
+    gap: 2.2rem;
+  }
 }

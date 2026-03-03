@@ -1,114 +1,106 @@
 @use "../../styles/partials/mixins" as *;
-@use "../../styles/partials/variables" as *;
-
 
 .form {
-    padding: 1rem;
+  margin-top: 2rem;
+  padding: 1.8rem;
+  border-radius: 2rem;
+  border: 0.1rem solid var(--border-soft);
+  background: rgba(11, 22, 40, 0.72);
+}
 
-    @include media-tablet {
-        padding: 0;
-        margin: 2rem;
-        border-bottom: 0.1rem solid $divider-line-color;
-    }
+.form__subtitle {
+  margin: 0;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  color: var(--text-muted);
+}
 
-    @include media-desktop {
-        border-bottom: 0.3rem solid $divider-line-color;
-        padding: 2rem;
-        margin: 0;
-    }
+.form__container {
+  margin-top: 1.4rem;
+  display: grid;
+  gap: 1.2rem;
+}
 
+.form__img-container {
+  display: none;
+}
 
-    &__subtitle {
-        font-size: 1.5rem;
-        font-weight: 600;
-    }
+.form__title {
+  margin: 0;
+  font-size: 1.8rem;
+}
 
-    &__pro-img {
-        width: 4.5rem;
-        height: 4.5rem;
-        border-radius: 50%;
-        margin-top: 4rem;
-        object-fit: cover;
-        object-position: 20%;
-    }
+.form__hint {
+  margin: 0.6rem 0 0;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+}
 
-    &__section {
-        width: 82%;
+.form__field {
+  margin-top: 1rem;
+  display: grid;
+  gap: 1rem;
+}
 
-        @include media-tablet {
-            width: 92%;
-        }
+.form__input {
+  resize: vertical;
+  min-height: 9rem;
+  padding: 1.2rem 1.4rem;
+  border-radius: 1.4rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.2);
+  background: rgba(16, 30, 54, 0.76);
+  color: var(--text-main);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
 
-        @include media-desktop {
-            width: 86%;
-        }
-    }
+.form__input::placeholder {
+  color: var(--text-muted);
+}
 
-    &__container {
-        display: flex;
-        justify-content: space-between;
-        border-bottom: 0.2rem solid $divider-line-color;
+.form__input:focus {
+  outline: 0;
+  border-color: rgba(77, 197, 255, 0.9);
+  box-shadow: 0 0 0 0.2rem rgba(77, 197, 255, 0.22);
+}
 
-        @include media-tablet {
-            border: none;
-        }
-    }
+.form__btn {
+  min-height: 4.4rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 1.8rem;
+  width: fit-content;
+  background: linear-gradient(128deg, var(--brand-a), var(--brand-b));
+  color: #041022;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-    &__title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: $secondary-text-color;
-        margin: 1rem 0;
-    }
+.form__btn:hover {
+  transform: translateY(-0.1rem);
+  box-shadow: 0 1rem 2rem rgba(77, 197, 255, 0.28);
+}
 
-    &__field {
+@include media-tablet {
+  .form {
+    padding: 2rem;
+  }
 
-        @include media-tablet {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
+  .form__container {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1.6rem;
+  }
 
-        }
-    }
+  .form__img-container {
+    display: block;
+    padding-top: 0.8rem;
+  }
 
-
-    &__input {
-        font-family: "avenir-next";
-        resize: none;
-        width: 100%;
-        height: 12rem;
-        background-color: $form-background-color;
-        border-radius: 0.4rem;
-        border: 0.2rem solid $divider-line-color;
-        padding: 1rem;
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-
-        @include media-tablet {
-            width: 68%;
-            height: 5rem;
-            padding: 1rem;
-            font-size: 1.8rem;
-            margin-bottom: 2rem;
-        }
-
-    }
-
-    &__btn {
-        background: url(../../assets/Icons/add_comment.svg) left no-repeat;
-        background-position-x: 1rem;
-        background-position-y: 1.5rem;
-        width: 100%;
-        height: 5rem;
-        margin-bottom: 1rem;
-        padding: 0;
-        border: none;
-        border-radius: 0.4rem;
-        color: $primary-background-color;
-        background-color: $primary-cta-color;
-
-        @include media-tablet {
-            width: 30%;
-        }
-    }
+  .form__pro-img {
+    width: 4.6rem;
+    height: 4.6rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 0.1rem solid var(--border-soft);
+  }
 }

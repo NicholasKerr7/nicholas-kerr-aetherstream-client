@@ -1,157 +1,99 @@
 @use "../../styles/partials/mixins" as *;
-@use "../../styles/partials/variables" as *;
-
 
 .article {
-    padding: 1rem;
-    width: 100%;
-    font-size: 1.5rem;
+  padding: 1.8rem;
+  border-radius: 2rem;
+  border: 0.1rem solid var(--border-soft);
+  background: rgba(11, 22, 40, 0.74);
+  backdrop-filter: blur(0.6rem);
+}
 
-    @include media-tablet {
-        padding: 1rem 2rem;
-    }
+.article__top {
+  display: grid;
+  gap: 1.4rem;
+}
 
-    @include media-desktop {
-        padding: 2rem 0 1rem 2rem;
-    }
+.article__title {
+  margin: 0;
+  font-size: 2.4rem;
+  line-height: 1.2;
+}
 
-    &__container {}
+.article__meta {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.4rem;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+}
 
-    &__heading {
-        border-bottom: 0.2rem solid $divider-line-color;
+.article__author,
+.article__date {
+  margin: 0;
+}
 
-        @include media-tablet {
-            border: none;
-        }
+.article__author {
+  color: var(--text-main);
+  font-weight: 600;
+}
 
-    }
+.article__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
 
-    &__title {
-        font-weight: 600;
+.article__metric {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem;
+  border-radius: 1.4rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.16);
+  background: rgba(10, 23, 41, 0.72);
+}
 
-        @include media-tablet {
-            font-weight: 700;
-            font-size: 3rem;
-            margin: 0;
-        }
+.article__metric-icon {
+  width: 1.8rem;
+  opacity: 0.85;
+}
 
-    }
+.article__metric-label,
+.article__metric-value {
+  margin: 0;
+  line-height: 1.2;
+}
 
-    &__sub-container {
-        width: 100%;
-        border-bottom: 0.2rem solid $divider-line-color;
-        display: flex;
+.article__metric-label {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
 
-        @include media-tablet {
-            display: flex;
-            justify-content: space-between;
-        }
+.article__metric-value {
+  margin-top: 0.2rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
 
-    }
+.article__description {
+  margin: 1.6rem 0 0;
+  color: #dde9ff;
+  line-height: 1.7;
+}
 
-    &__info {
-        width: 50%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+@include media-tablet {
+  .article {
+    padding: 2.2rem;
+  }
 
+  .article__title {
+    font-size: 3rem;
+  }
 
-        @include media-tablet {
-            flex-direction: row;
-            justify-content: flex-start;
-
-        }
-    }
-
-
-    &__engagement {
-        width: 50%;
-
-        @include media-tablet {
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        @include media-desktop {
-            align-items: center;
-        }
-
-    }
-
-    &__author-container {
-
-        @include media-tablet {
-            width: 25%;
-        }
-
-        @include media-desktop {
-            width: 35%;
-        }
-
-
-    }
-
-    &__author {
-        font-size: 1.5rem;
-        font-weight: 600;
-    }
-
-    &__date {
-        color: $secondary-text-color;
-    }
-
-    &__likes {
-        display: flex;
-        color: $secondary-text-color;
-
-        @include media-tablet {
-            width: 25%;
-        }
-
-        @include media-desktop {
-            width: 30%;
-
-        }
-
-    }
-
-    &__likes-icon {
-        margin-right: 1rem;
-
-        @include media-desktop {
-            width: 2rem;
-        }
-
-    }
-
-    &__views {
-        display: flex;
-        color: $secondary-text-color;
-
-        @include media-tablet {
-            width: 35%;
-        }
-
-
-    }
-
-    &__views-icon {
-        margin-right: 1rem;
-
-        @include media-desktop {
-            width: 2rem;
-        }
-
-    }
-
-    &__description {
-        margin-top: 1rem;
-        font-size: 1.5rem;
-    }
-
-    @include media-desktop {
-        margin-right: 1rem;
-
-    }
-
+  .article__top {
+    grid-template-columns: minmax(0, 2fr) minmax(20rem, 1fr);
+    gap: 2rem;
+    align-items: start;
+  }
 }

@@ -1,5 +1,109 @@
 @use "./styles/partials/fonts";
 @use "./styles/partials/resets";
+@use "./styles/partials/mixins" as *;
 
+:root {
+  --bg-0: #050813;
+  --bg-1: #0b1427;
+  --bg-2: #0d1f38;
+  --surface: rgba(13, 25, 45, 0.7);
+  --surface-strong: rgba(12, 22, 40, 0.9);
+  --border-soft: rgba(132, 187, 255, 0.2);
+  --text-main: #f3f8ff;
+  --text-muted: #99abc7;
+  --brand-a: #4dc5ff;
+  --brand-b: #6a8cff;
+}
 
+.app {
+  min-height: 100vh;
+  color: var(--text-main);
+  background:
+    radial-gradient(90rem 60rem at -10% -15%, rgba(77, 197, 255, 0.22), transparent 60%),
+    radial-gradient(70rem 50rem at 110% 10%, rgba(106, 140, 255, 0.2), transparent 65%),
+    linear-gradient(140deg, var(--bg-0), var(--bg-1) 55%, var(--bg-2));
+  position: relative;
+  overflow-x: clip;
+}
 
+.app__ambient-glow {
+  pointer-events: none;
+  position: fixed;
+  inset: -25vh -20vw;
+  background:
+    radial-gradient(circle at 25% 25%, rgba(77, 197, 255, 0.35), transparent 45%),
+    radial-gradient(circle at 75% 35%, rgba(106, 140, 255, 0.3), transparent 42%);
+  filter: blur(7.2rem);
+  z-index: 0;
+  animation: ambient-drift 12s ease-in-out infinite alternate;
+}
+
+.app__main {
+  position: relative;
+  z-index: 1;
+  width: min(132rem, calc(100% - 2.4rem));
+  margin: 0 auto;
+  padding-bottom: 4rem;
+}
+
+.app__not-found {
+  width: min(72rem, 100%);
+  margin: 8rem auto 0;
+  padding: 3.2rem;
+  text-align: center;
+  border: 0.1rem solid var(--border-soft);
+  border-radius: 2rem;
+  background: var(--surface);
+  backdrop-filter: blur(1rem);
+}
+
+.app__not-found-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.4rem;
+  color: var(--brand-a);
+}
+
+.app__not-found-title {
+  margin: 1.2rem 0 0.8rem;
+  font-size: 3.2rem;
+}
+
+.app__not-found-copy {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.app__not-found-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem;
+  padding: 1rem 1.8rem;
+  border-radius: 999px;
+  border: 0.1rem solid transparent;
+  background: linear-gradient(125deg, var(--brand-a), var(--brand-b));
+  color: #041022;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.app__not-found-link:hover {
+  transform: translateY(-0.1rem);
+  box-shadow: 0 1rem 2.4rem rgba(77, 197, 255, 0.3);
+}
+
+@include media-tablet {
+  .app__main {
+    width: min(132rem, calc(100% - 4rem));
+  }
+}
+
+@keyframes ambient-drift {
+  from {
+    transform: translate3d(-1rem, -0.8rem, 0) scale(1);
+  }
+  to {
+    transform: translate3d(1.2rem, 0.8rem, 0) scale(1.05);
+  }
+}
