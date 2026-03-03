@@ -1,7 +1,25 @@
+import { useState } from "react";
 import "./Form.scss";
 import ProImg from "../../assets/images/Mohan-muruge.jpg";
 
-function Form({ commentCount = 0 }) {
+function Form({
+  commentCount = 0,
+  onSubmitComment,
+  isSubmitting = false,
+  feedbackMessage = "",
+}) {
+  const [commentText, setCommentText] = useState("");
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const didSubmit = await onSubmitComment(commentText);
+
+    if (didSubmit) {
+      setCommentText("");
+    }
+  };
+
   return (
     <section className="form">
       <div className="form__sub-content">
@@ -20,20 +38,27 @@ function Form({ commentCount = 0 }) {
               Share a thoughtful response with the community.
             </p>
           </div>
-          <form
-            className="form__field"
-            onSubmit={(event) => event.preventDefault()}
-          >
+          <form className="form__field" onSubmit={handleSubmit}>
             <textarea
               rows={3}
               className="form__input"
+              value={commentText}
+              onChange={(event) => setCommentText(event.target.value)}
               placeholder="Send your signal..."
               required
             />
-            <button className="form__btn" type="submit">
-              Post Signal
-            </button>
+            <div className="form__footer">
+              <p className="form__counter">{commentText.length}/280</p>
+              <button
+                className="form__btn"
+                type="submit"
+                disabled={isSubmitting || !commentText.trim()}
+              >
+                {isSubmitting ? "Posting..." : "Post Signal"}
+              </button>
+            </div>
           </form>
+          {feedbackMessage && <p className="form__feedback">{feedbackMessage}</p>}
         </div>
       </div>
     </section>

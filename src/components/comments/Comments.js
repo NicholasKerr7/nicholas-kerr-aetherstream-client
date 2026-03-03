@@ -1,17 +1,27 @@
 import "./Comments.scss";
 import profileImg from "../../assets/images/avatar-640.png";
 
-function Comments({ currentVideoDetails }) {
-  if (!currentVideoDetails.comments.length) {
+function Comments({
+  comments = [],
+  onLikeComment,
+  onDeleteComment,
+  likingCommentIds = [],
+  deletingCommentIds = [],
+}) {
+  if (!comments.length) {
     return <p className="comments comments--empty">No responses yet.</p>;
   }
 
-  return currentVideoDetails.comments.map((comment) => {
+  return comments.map((comment) => {
     const date = new Date(comment.timestamp).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
+
+    const isLiking = likingCommentIds.includes(comment.id);
+    const isDeleting = deletingCommentIds.includes(comment.id);
+    const likesCount = Number(comment.likes || 0);
 
     return (
       <section key={comment.id} className="comments">
@@ -29,6 +39,25 @@ function Comments({ currentVideoDetails }) {
           </div>
           <div className="comments__field">
             <p className="comments__paragraph">{comment.comment}</p>
+          </div>
+          <div className="comments__actions">
+            <p className="comments__likes">{likesCount} likes</p>
+            <button
+              className="comments__action-btn comments__action-btn--like"
+              type="button"
+              disabled={isLiking || isDeleting}
+              onClick={() => onLikeComment(comment.id)}
+            >
+              {isLiking ? "Liking..." : "Like"}
+            </button>
+            <button
+              className="comments__action-btn comments__action-btn--delete"
+              type="button"
+              disabled={isDeleting || isLiking}
+              onClick={() => onDeleteComment(comment.id)}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </button>
           </div>
         </div>
       </section>
