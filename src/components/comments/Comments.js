@@ -1,6 +1,28 @@
 import "./Comments.scss";
 import profileImg from "../../assets/images/avatar-640.png";
 
+const LikeIcon = () => (
+  <svg
+    className="comments__action-icon"
+    viewBox="0 0 20 20"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path d="M10 17.35 8.55 16.03C4.5 12.36 2 10.09 2 7.31 2 5.04 3.79 3.25 6.06 3.25c1.28 0 2.51.6 3.29 1.54.78-.94 2.01-1.54 3.29-1.54 2.27 0 4.06 1.79 4.06 4.06 0 2.78-2.5 5.05-6.55 8.72z" />
+  </svg>
+);
+
+const DeleteIcon = () => (
+  <svg
+    className="comments__action-icon"
+    viewBox="0 0 20 20"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path d="M7.25 3.5h5.5m-6.5 2h7.5m-7.1 0 .55 9.15a1 1 0 0 0 1 .94h3.6a1 1 0 0 0 1-.94l.55-9.15M8.9 8.2v4.8m2.2-4.8v4.8" />
+  </svg>
+);
+
 function Comments({
   comments = [],
   onLikeComment,
@@ -46,17 +68,21 @@ function Comments({
               className="comments__action-btn comments__action-btn--like"
               type="button"
               disabled={isLiking || isDeleting}
+              aria-label="Like comment"
               onClick={() => onLikeComment(comment.id)}
             >
-              {isLiking ? "Liking..." : "Like"}
+              <LikeIcon />
+              <span>{isLiking ? "Liking..." : "Like"}</span>
             </button>
             <button
               className="comments__action-btn comments__action-btn--delete"
               type="button"
               disabled={isDeleting || isLiking}
+              aria-label="Delete comment"
               onClick={() => onDeleteComment(comment.id)}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              <DeleteIcon />
+              <span>{isDeleting ? "Deleting..." : "Delete"}</span>
             </button>
           </div>
         </div>
