@@ -22,12 +22,26 @@
   padding-top: 0.3rem;
 }
 
-.comments__pro-img {
+.comments__pro-img,
+.comments__pro-fallback {
   width: 4rem;
   height: 4rem;
   border-radius: 50%;
-  object-fit: cover;
   border: 0.1rem solid var(--border-soft);
+}
+
+.comments__pro-img {
+  object-fit: cover;
+}
+
+.comments__pro-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #051124;
+  background: linear-gradient(130deg, var(--brand-a), var(--brand-b));
 }
 
 .comments__container {

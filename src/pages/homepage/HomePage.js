@@ -3,12 +3,13 @@ import Article from "../../components/article/Article";
 import Form from "../../components/form/Form";
 import Comments from "../../components/comments/Comments";
 import Playlist from "../../components/playlist/Playlist";
-import { API_URL } from "../../components/utilities/Utilities";
+import { API_URL, getAuthHeaders } from "../../components/utilities/Utilities";
 import "./HomePage.scss";
 
 import axios from "axios";
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 function HomePage({ searchQuery }) {
   const [playlist, setPlaylist] = useState([]);
@@ -18,6 +19,8 @@ function HomePage({ searchQuery }) {
   const [likingCommentIds, setLikingCommentIds] = useState([]);
   const [deletingCommentIds, setDeletingCommentIds] = useState([]);
   const { videoId } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated, token, user } = useAuth();
 
   const mutateCommentsForVideo = (targetVideoId, mutationFn) => {
     setCurrentVideoDetails((previousVideo) => {
@@ -83,8 +86,18 @@ function HomePage({ searchQuery }) {
     [playlist, activeVideoId, normalizedQuery]
   );
 
+  const routeToAuth = () => {
+    setCommentFeedback("Sign in to interact with the conversation.");
+    navigate("/auth");
+  };
+
   const handleCreateComment = async (commentText) => {
     if (!currentVideoDetails) {
+      return false;
+    }
+
+    if (!isAuthenticated) {
+      routeToAuth();
       return false;
     }
 
@@ -100,10 +113,11 @@ function HomePage({ searchQuery }) {
 
     const optimisticComment = {
       id: temporaryCommentId,
-      name: "You",
+      name: user?.name || "You",
       comment: trimmedComment,
       likes: 0,
       timestamp: Date.now(),
+      userId: user?.id,
     };
 
     setCommentFeedback("");
@@ -118,8 +132,10 @@ function HomePage({ searchQuery }) {
       const response = await axios.post(
         `${API_URL}videos/${videoIdForAction}/comments`,
         {
-          name: "You",
           comment: trimmedComment,
+        },
+        {
+          headers: getAuthHeaders(token),
         }
       );
 
@@ -137,7 +153,17 @@ function HomePage({ searchQuery }) {
         comments.filter((comment) => comment.id !== temporaryCommentId)
       );
 
-      setCommentFeedback("Could not post your signal. Please try again.");
+      const failureMessage =
+        error.response?.status === 401
+          ? "Your session expired. Please sign in again."
+          : "Could not post your signal. Please try again.";
+
+      setCommentFeedback(failureMessage);
+
+      if (error.response?.status === 401) {
+        navigate("/auth");
+      }
+
       return false;
     } finally {
       setIsPostingComment(false);
@@ -146,6 +172,11 @@ function HomePage({ searchQuery }) {
 
   const handleLikeComment = async (commentId) => {
     if (!currentVideoDetails) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      routeToAuth();
       return;
     }
 
@@ -175,7 +206,11 @@ function HomePage({ searchQuery }) {
 
     try {
       const response = await axios.patch(
-        `${API_URL}videos/${videoIdForAction}/comments/${commentId}/like`
+        `${API_URL}videos/${videoIdForAction}/comments/${commentId}/like`,
+        {},
+        {
+          headers: getAuthHeaders(token),
+        }
       );
 
       mutateCommentsForVideo(videoIdForAction, (comments) =>
@@ -199,7 +234,16 @@ function HomePage({ searchQuery }) {
         })
       );
 
-      setCommentFeedback("Could not like this signal. Please try again.");
+      const failureMessage =
+        error.response?.status === 401
+          ? "Your session expired. Please sign in again."
+          : "Could not like this signal. Please try again.";
+
+      setCommentFeedback(failureMessage);
+
+      if (error.response?.status === 401) {
+        navigate("/auth");
+      }
     } finally {
       setLikingCommentIds((previousIds) =>
         previousIds.filter((id) => id !== commentId)
@@ -209,6 +253,11 @@ function HomePage({ searchQuery }) {
 
   const handleDeleteComment = async (commentId) => {
     if (!currentVideoDetails) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      routeToAuth();
       return;
     }
 
@@ -239,9 +288,9 @@ function HomePage({ searchQuery }) {
     );
 
     try {
-      await axios.delete(
-        `${API_URL}videos/${videoIdForAction}/comments/${commentId}`
-      );
+      await axios.delete(`${API_URL}videos/${videoIdForAction}/comments/${commentId}`, {
+        headers: getAuthHeaders(token),
+      });
     } catch (error) {
       console.log(error);
 
@@ -255,7 +304,16 @@ function HomePage({ searchQuery }) {
         return restoredComments;
       });
 
-      setCommentFeedback("Could not delete this signal. Please try again.");
+      const failureMessage =
+        error.response?.status === 401
+          ? "Your session expired. Please sign in again."
+          : "Could not delete this signal. Please try again.";
+
+      setCommentFeedback(failureMessage);
+
+      if (error.response?.status === 401) {
+        navigate("/auth");
+      }
     } finally {
       setDeletingCommentIds((previousIds) =>
         previousIds.filter((id) => id !== commentId)
@@ -284,6 +342,8 @@ function HomePage({ searchQuery }) {
             onSubmitComment={handleCreateComment}
             isSubmitting={isPostingComment}
             feedbackMessage={commentFeedback}
+            isAuthenticated={isAuthenticated}
+            onRequireAuth={routeToAuth}
           />
           <Comments
             comments={comments}
@@ -291,6 +351,8 @@ function HomePage({ searchQuery }) {
             onDeleteComment={handleDeleteComment}
             likingCommentIds={likingCommentIds}
             deletingCommentIds={deletingCommentIds}
+            isAuthenticated={isAuthenticated}
+            onRequireAuth={routeToAuth}
           />
         </section>
         <aside className="home__rail">

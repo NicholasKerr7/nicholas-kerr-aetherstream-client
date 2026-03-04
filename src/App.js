@@ -1,9 +1,18 @@
 import "./App.scss";
-import { BrowserRouter, Navigate, Route, Routes, Link } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  Link,
+} from "react-router-dom";
 import { useState } from "react";
 import HomePage from "./pages/homepage/HomePage";
 import UploadPage from "./pages/uploadpage/UploadPage";
+import AuthPage from "./pages/authpage/AuthPage";
+import ProfilePage from "./pages/profilepage/ProfilePage";
 import Header from "./components/header/Header";
+import { useAuth } from "./context/AuthContext";
 
 const NotFound = () => (
   <section className="app__not-found">
@@ -17,6 +26,24 @@ const NotFound = () => (
     </Link>
   </section>
 );
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isBootstrapping } = useAuth();
+
+  if (isBootstrapping) {
+    return (
+      <section className="app__status-panel">
+        <p className="app__status-text">Authorizing secure channel...</p>
+      </section>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate replace to="/auth" />;
+  }
+
+  return children;
+};
 
 const App = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,15 +60,28 @@ const App = () => {
               path="/videos/:videoId"
               element={<HomePage searchQuery={searchQuery} />}
             />
-            <Route path="/studio/upload" element={<UploadPage />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/studio/upload"
+              element={
+                <ProtectedRoute>
+                  <UploadPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/UploadPage"
               element={<Navigate replace to="/studio/upload" />}
             />
-            <Route
-              path="/upload"
-              element={<Navigate replace to="/studio/upload" />}
-            />
+            <Route path="/upload" element={<Navigate replace to="/studio/upload" />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

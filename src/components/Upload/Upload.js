@@ -1,9 +1,13 @@
 import "./Upload.scss";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import ThumbnailImg from "../../assets/images/Upload-video-preview.jpg";
-import { API_URL } from "../../components/utilities/Utilities";
+import {
+  API_URL,
+  getAuthHeaders,
+} from "../../components/utilities/Utilities";
 import axios from "axios";
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 const MAX_TITLE_LENGTH = 70;
 const MAX_DESCRIPTION_LENGTH = 260;
@@ -13,6 +17,11 @@ const Upload = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
+  const { isAuthenticated, token } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate replace to="/auth" />;
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -32,12 +41,20 @@ const Upload = () => {
 
     setIsPublishing(true);
     try {
-      await axios.post(`${API_URL}videos`, uploadVideo);
+      await axios.post(`${API_URL}videos`, uploadVideo, {
+        headers: getAuthHeaders(token),
+      });
       alert("Published successfully.");
       NavigateToPage("/");
     } catch (error) {
       console.log(error);
-      alert("Publish failed. Please try again.");
+
+      if (error.response?.status === 401) {
+        alert("Your session expired. Please sign in again.");
+        NavigateToPage("/auth");
+      } else {
+        alert("Publish failed. Please try again.");
+      }
     } finally {
       setIsPublishing(false);
     }

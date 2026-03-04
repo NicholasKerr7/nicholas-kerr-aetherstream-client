@@ -1,17 +1,33 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./Form.scss";
-import ProImg from "../../assets/images/Mohan-muruge.jpg";
+import { useAuth } from "../../context/AuthContext";
+import { getAvatarUrl, getInitials } from "../utilities/Utilities";
 
 function Form({
   commentCount = 0,
   onSubmitComment,
   isSubmitting = false,
   feedbackMessage = "",
+  isAuthenticated = false,
+  onRequireAuth,
 }) {
   const [commentText, setCommentText] = useState("");
+  const [avatarBroken, setAvatarBroken] = useState(false);
+  const { user } = useAuth();
+  const avatarUrl = getAvatarUrl(user);
+  const avatarInitials = useMemo(() => getInitials(user?.name || ""), [user]);
+
+  useEffect(() => {
+    setAvatarBroken(false);
+  }, [avatarUrl]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!isAuthenticated) {
+      onRequireAuth();
+      return;
+    }
 
     const didSubmit = await onSubmitComment(commentText);
 
@@ -29,7 +45,16 @@ function Form({
       </div>
       <div className="form__container">
         <div className="form__img-container">
-          <img className="form__pro-img" src={ProImg} alt="Profile img" />
+          {avatarUrl && !avatarBroken ? (
+            <img
+              className="form__pro-img"
+              src={avatarUrl}
+              alt={`${user?.name || "Your"} avatar`}
+              onError={() => setAvatarBroken(true)}
+            />
+          ) : (
+            <span className="form__pro-fallback">{avatarInitials}</span>
+          )}
         </div>
         <div className="form__section">
           <div className="form__title-section">
@@ -44,17 +69,24 @@ function Form({
               className="form__input"
               value={commentText}
               onChange={(event) => setCommentText(event.target.value)}
-              placeholder="Send your signal..."
+              placeholder={
+                isAuthenticated ? "Send your signal..." : "Sign in to join the conversation"
+              }
               required
+              disabled={!isAuthenticated}
             />
             <div className="form__footer">
               <p className="form__counter">{commentText.length}/280</p>
               <button
                 className="form__btn"
                 type="submit"
-                disabled={isSubmitting || !commentText.trim()}
+                disabled={isAuthenticated ? isSubmitting || !commentText.trim() : false}
               >
-                {isSubmitting ? "Posting..." : "Post Signal"}
+                {isAuthenticated
+                  ? isSubmitting
+                    ? "Posting..."
+                    : "Post Signal"
+                  : "Sign In to Comment"}
               </button>
             </div>
           </form>

@@ -1,5 +1,10 @@
+import { useEffect, useState } from "react";
 import "./Comments.scss";
-import profileImg from "../../assets/images/avatar-640.png";
+import { useAuth } from "../../context/AuthContext";
+import {
+  getAvatarUrl,
+  getInitials,
+} from "../utilities/Utilities";
 
 const LikeIcon = () => (
   <svg
@@ -29,7 +34,17 @@ function Comments({
   onDeleteComment,
   likingCommentIds = [],
   deletingCommentIds = [],
+  isAuthenticated = false,
+  onRequireAuth,
 }) {
+  const { user } = useAuth();
+  const [brokenAvatarCommentIds, setBrokenAvatarCommentIds] = useState([]);
+  const currentUserAvatarUrl = getAvatarUrl(user);
+
+  useEffect(() => {
+    setBrokenAvatarCommentIds([]);
+  }, [currentUserAvatarUrl]);
+
   if (!comments.length) {
     return <p className="comments comments--empty">No responses yet.</p>;
   }
@@ -44,15 +59,32 @@ function Comments({
     const isLiking = likingCommentIds.includes(comment.id);
     const isDeleting = deletingCommentIds.includes(comment.id);
     const likesCount = Number(comment.likes || 0);
+    const showCurrentUserAvatar =
+      comment.userId &&
+      user?.id === comment.userId &&
+      currentUserAvatarUrl &&
+      !brokenAvatarCommentIds.includes(comment.id);
+    const commentInitials = getInitials(comment.name || "");
 
     return (
       <section key={comment.id} className="comments">
         <div className="comments__img-container">
-          <img
-            className="comments__pro-img"
-            src={profileImg}
-            alt="profile img"
-          />
+          {showCurrentUserAvatar ? (
+            <img
+              className="comments__pro-img"
+              src={currentUserAvatarUrl}
+              alt={`${comment.name} avatar`}
+              onError={() =>
+                setBrokenAvatarCommentIds((previousIds) =>
+                  previousIds.includes(comment.id)
+                    ? previousIds
+                    : [...previousIds, comment.id]
+                )
+              }
+            />
+          ) : (
+            <span className="comments__pro-fallback">{commentInitials}</span>
+          )}
         </div>
         <div className="comments__container">
           <div className="comments__head-wrapper">
@@ -69,7 +101,14 @@ function Comments({
               type="button"
               disabled={isLiking || isDeleting}
               aria-label="Like comment"
-              onClick={() => onLikeComment(comment.id)}
+              onClick={() => {
+                if (!isAuthenticated) {
+                  onRequireAuth();
+                  return;
+                }
+
+                onLikeComment(comment.id);
+              }}
             >
               <LikeIcon />
               <span>{isLiking ? "Liking..." : "Like"}</span>
@@ -79,7 +118,14 @@ function Comments({
               type="button"
               disabled={isDeleting || isLiking}
               aria-label="Delete comment"
-              onClick={() => onDeleteComment(comment.id)}
+              onClick={() => {
+                if (!isAuthenticated) {
+                  onRequireAuth();
+                  return;
+                }
+
+                onDeleteComment(comment.id);
+              }}
             >
               <DeleteIcon />
               <span>{isDeleting ? "Deleting..." : "Delete"}</span>

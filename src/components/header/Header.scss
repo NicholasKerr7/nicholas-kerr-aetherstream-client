@@ -104,7 +104,8 @@
   outline: 0;
 }
 
-.header__studio-btn {
+.header__studio-btn,
+.header__auth-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -112,25 +113,84 @@
   padding: 0 1.8rem;
   border-radius: 999px;
   border: 0.1rem solid transparent;
-  background: linear-gradient(128deg, var(--brand-a), var(--brand-b));
   color: #041022;
   font-size: 1.4rem;
   font-weight: 700;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.header__studio-btn:hover {
+.header__studio-btn {
+  background: linear-gradient(128deg, var(--brand-a), var(--brand-b));
+}
+
+.header__auth-btn {
+  background: linear-gradient(128deg, #9be7ff, #7ac7ff);
+}
+
+.header__studio-btn:hover,
+.header__auth-btn:hover {
   transform: translateY(-0.1rem);
   box-shadow: 0 1rem 2rem rgba(77, 197, 255, 0.3);
 }
 
-.header__pro-img {
-  width: 4.4rem;
+.header__auth-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.header__profile-pill {
   height: 4.4rem;
-  border-radius: 50%;
-  object-fit: cover;
-  object-position: 20%;
+  border-radius: 999px;
   border: 0.1rem solid var(--border-soft);
+  background: rgba(15, 30, 53, 0.85);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.9rem 0.3rem 0.4rem;
+}
+
+.header__profile-name {
+  color: var(--text-main);
+  font-size: 1.3rem;
+  font-weight: 600;
+  max-width: 11rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.header__pro-img,
+.header__pro-fallback {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: 0.1rem solid var(--border-soft);
+}
+
+.header__pro-img {
+  object-fit: cover;
+}
+
+.header__pro-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #031224;
+  background: linear-gradient(130deg, var(--brand-a), var(--brand-b));
+}
+
+.header__logout-btn {
+  min-height: 4.4rem;
+  border-radius: 999px;
+  border: 0.1rem solid rgba(132, 187, 255, 0.25);
+  background: rgba(15, 30, 53, 0.7);
+  color: var(--text-main);
+  padding: 0 1.4rem;
+  font-size: 1.3rem;
+  font-weight: 600;
 }
 
 @include media-tablet {
@@ -144,7 +204,7 @@
   }
 
   .header__controls {
-    width: min(72rem, 62vw);
+    width: min(88rem, 68vw);
     flex-wrap: nowrap;
     justify-content: flex-end;
   }
