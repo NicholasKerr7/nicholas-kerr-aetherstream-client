@@ -114,6 +114,7 @@ function HomePage({ searchQuery }) {
     const optimisticComment = {
       id: temporaryCommentId,
       name: user?.name || "You",
+      avatarUrl: user?.avatarUrl || "",
       comment: trimmedComment,
       likes: 0,
       timestamp: Date.now(),

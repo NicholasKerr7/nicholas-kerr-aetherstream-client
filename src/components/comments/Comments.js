@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import "./Comments.scss";
-import { useAuth } from "../../context/AuthContext";
-import {
-  getAvatarUrl,
-  getInitials,
-} from "../utilities/Utilities";
+import { getInitials } from "../utilities/Utilities";
 
 const LikeIcon = () => (
   <svg
@@ -37,13 +33,11 @@ function Comments({
   isAuthenticated = false,
   onRequireAuth,
 }) {
-  const { user } = useAuth();
   const [brokenAvatarCommentIds, setBrokenAvatarCommentIds] = useState([]);
-  const currentUserAvatarUrl = getAvatarUrl(user);
 
   useEffect(() => {
     setBrokenAvatarCommentIds([]);
-  }, [currentUserAvatarUrl]);
+  }, [comments]);
 
   if (!comments.length) {
     return <p className="comments comments--empty">No responses yet.</p>;
@@ -59,20 +53,19 @@ function Comments({
     const isLiking = likingCommentIds.includes(comment.id);
     const isDeleting = deletingCommentIds.includes(comment.id);
     const likesCount = Number(comment.likes || 0);
-    const showCurrentUserAvatar =
-      comment.userId &&
-      user?.id === comment.userId &&
-      currentUserAvatarUrl &&
+    const commentAvatarUrl = comment.avatarUrl?.trim() || "";
+    const showCommentAvatar =
+      commentAvatarUrl &&
       !brokenAvatarCommentIds.includes(comment.id);
     const commentInitials = getInitials(comment.name || "");
 
     return (
       <section key={comment.id} className="comments">
         <div className="comments__img-container">
-          {showCurrentUserAvatar ? (
+          {showCommentAvatar ? (
             <img
               className="comments__pro-img"
-              src={currentUserAvatarUrl}
+              src={commentAvatarUrl}
               alt={`${comment.name} avatar`}
               onError={() =>
                 setBrokenAvatarCommentIds((previousIds) =>
