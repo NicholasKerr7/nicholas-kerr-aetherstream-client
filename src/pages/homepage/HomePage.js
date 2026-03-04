@@ -37,7 +37,9 @@ function HomePage({ searchQuery }) {
 
   const getVideoById = useCallback((id) => {
     axios
-      .get(`${API_URL}videos/${id}`)
+      .get(`${API_URL}videos/${id}`, {
+        headers: getAuthHeaders(token),
+      })
       .then((response) => {
         setCurrentVideoDetails(response.data);
         setCommentFeedback("");
@@ -45,7 +47,7 @@ function HomePage({ searchQuery }) {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     axios
@@ -117,6 +119,7 @@ function HomePage({ searchQuery }) {
       avatarUrl: user?.avatarUrl || "",
       comment: trimmedComment,
       likes: 0,
+      likedByCurrentUser: false,
       timestamp: Date.now(),
       userId: user?.id,
     };
@@ -198,9 +201,15 @@ function HomePage({ searchQuery }) {
           return comment;
         }
 
+        const isCurrentlyLiked = Boolean(comment.likedByCurrentUser);
+
         return {
           ...comment,
-          likes: Number(comment.likes || 0) + 1,
+          likes: Math.max(
+            0,
+            Number(comment.likes || 0) + (isCurrentlyLiked ? -1 : 1)
+          ),
+          likedByCurrentUser: !isCurrentlyLiked,
         };
       })
     );
@@ -228,9 +237,15 @@ function HomePage({ searchQuery }) {
             return comment;
           }
 
+          const isCurrentlyLiked = Boolean(comment.likedByCurrentUser);
+
           return {
             ...comment,
-            likes: Math.max(0, Number(comment.likes || 0) - 1),
+            likes: Math.max(
+              0,
+              Number(comment.likes || 0) + (isCurrentlyLiked ? -1 : 1)
+            ),
+            likedByCurrentUser: !isCurrentlyLiked,
           };
         })
       );
@@ -238,7 +253,7 @@ function HomePage({ searchQuery }) {
       const failureMessage =
         error.response?.status === 401
           ? "Your session expired. Please sign in again."
-          : "Could not like this signal. Please try again.";
+          : "Could not update this like. Please try again.";
 
       setCommentFeedback(failureMessage);
 

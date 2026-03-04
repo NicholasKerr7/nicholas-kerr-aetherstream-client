@@ -95,7 +95,7 @@ function Comments({
               className="comments__action-btn comments__action-btn--like"
               type="button"
               disabled={isLiking || isDeleting}
-              aria-label="Like comment"
+              aria-label={comment.likedByCurrentUser ? "Unlike comment" : "Like comment"}
               onClick={() => {
                 if (!isAuthenticated) {
                   onRequireAuth();
@@ -106,7 +106,13 @@ function Comments({
               }}
             >
               <LikeIcon />
-              <span>{isLiking ? "Liking..." : "Like"}</span>
+              <span>
+                {isLiking
+                  ? "Saving..."
+                  : comment.likedByCurrentUser
+                    ? "Unlike"
+                    : "Like"}
+              </span>
             </button>
             {isCommentOwner && (
               <button
