@@ -30,6 +30,7 @@ function Comments({
   onDeleteComment,
   likingCommentIds = [],
   deletingCommentIds = [],
+  currentUserId = "",
   isAuthenticated = false,
   onRequireAuth,
 }) {
@@ -58,6 +59,7 @@ function Comments({
       commentAvatarUrl &&
       !brokenAvatarCommentIds.includes(comment.id);
     const commentInitials = getInitials(comment.name || "");
+    const isCommentOwner = Boolean(currentUserId && comment.userId === currentUserId);
 
     return (
       <section key={comment.id} className="comments">
@@ -106,23 +108,25 @@ function Comments({
               <LikeIcon />
               <span>{isLiking ? "Liking..." : "Like"}</span>
             </button>
-            <button
-              className="comments__action-btn comments__action-btn--delete"
-              type="button"
-              disabled={isDeleting || isLiking}
-              aria-label="Delete comment"
-              onClick={() => {
-                if (!isAuthenticated) {
-                  onRequireAuth();
-                  return;
-                }
+            {isCommentOwner && (
+              <button
+                className="comments__action-btn comments__action-btn--delete"
+                type="button"
+                disabled={isDeleting || isLiking}
+                aria-label="Delete comment"
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    onRequireAuth();
+                    return;
+                  }
 
-                onDeleteComment(comment.id);
-              }}
-            >
-              <DeleteIcon />
-              <span>{isDeleting ? "Deleting..." : "Delete"}</span>
-            </button>
+                  onDeleteComment(comment.id);
+                }}
+              >
+                <DeleteIcon />
+                <span>{isDeleting ? "Deleting..." : "Delete"}</span>
+              </button>
+            )}
           </div>
         </div>
       </section>

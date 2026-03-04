@@ -308,7 +308,9 @@ function HomePage({ searchQuery }) {
       const failureMessage =
         error.response?.status === 401
           ? "Your session expired. Please sign in again."
-          : "Could not delete this signal. Please try again.";
+          : error.response?.status === 403
+            ? "You can only delete your own signals."
+            : "Could not delete this signal. Please try again.";
 
       setCommentFeedback(failureMessage);
 
@@ -352,6 +354,7 @@ function HomePage({ searchQuery }) {
             onDeleteComment={handleDeleteComment}
             likingCommentIds={likingCommentIds}
             deletingCommentIds={deletingCommentIds}
+            currentUserId={user?.id || ""}
             isAuthenticated={isAuthenticated}
             onRequireAuth={routeToAuth}
           />
