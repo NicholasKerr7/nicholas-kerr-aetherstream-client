@@ -6,16 +6,20 @@ import {
   getAuthHeaders,
 } from "../../components/utilities/Utilities";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 
 const MAX_TITLE_LENGTH = 70;
 const MAX_DESCRIPTION_LENGTH = 260;
+const MAX_VIDEO_UPLOAD_BYTES = 750 * 1024 * 1024;
 
 const Upload = () => {
   const NavigateToPage = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState("");
+  const [uploadFeedback, setUploadFeedback] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const { isAuthenticated, token } = useAuth();
 
@@ -23,25 +27,65 @@ const Upload = () => {
     return <Navigate replace to="/auth" />;
   }
 
+  useEffect(() => {
+    if (!videoFile) {
+      setVideoPreviewUrl("");
+      return undefined;
+    }
+
+    const temporaryPreviewUrl = URL.createObjectURL(videoFile);
+    setVideoPreviewUrl(temporaryPreviewUrl);
+
+    return () => {
+      URL.revokeObjectURL(temporaryPreviewUrl);
+    };
+  }, [videoFile]);
+
+  const handleFileSelection = (event) => {
+    const selectedFile = event.target.files?.[0];
+
+    if (!selectedFile) {
+      setVideoFile(null);
+      return;
+    }
+
+    if (!selectedFile.type.startsWith("video/")) {
+      setUploadFeedback("Please select a valid video file.");
+      event.target.value = "";
+      return;
+    }
+
+    if (selectedFile.size > MAX_VIDEO_UPLOAD_BYTES) {
+      const maxMb = Math.round(MAX_VIDEO_UPLOAD_BYTES / (1024 * 1024));
+      setUploadFeedback(`Video file is too large. Max size is ${maxMb}MB.`);
+      event.target.value = "";
+      return;
+    }
+
+    setUploadFeedback("");
+    setVideoFile(selectedFile);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     const videoTitle = title.trim();
     const videoDescription = description.trim();
 
-    if (!videoTitle || !videoDescription) {
-      alert("Failed to publish. Please complete all inputs.");
+    if (!videoTitle || !videoDescription || !videoFile) {
+      setUploadFeedback("Failed to publish. Complete all fields and attach a video.");
       return;
     }
 
-    const uploadVideo = {
-      title: videoTitle,
-      description: videoDescription,
-    };
+    const uploadVideoFormData = new FormData();
+    uploadVideoFormData.append("title", videoTitle);
+    uploadVideoFormData.append("description", videoDescription);
+    uploadVideoFormData.append("video", videoFile);
 
+    setUploadFeedback("");
     setIsPublishing(true);
     try {
-      await axios.post(`${API_URL}videos`, uploadVideo, {
+      await axios.post(`${API_URL}videos`, uploadVideoFormData, {
         headers: getAuthHeaders(token),
       });
       alert("Published successfully.");
@@ -53,7 +97,9 @@ const Upload = () => {
         alert("Your session expired. Please sign in again.");
         NavigateToPage("/auth");
       } else {
-        alert("Publish failed. Please try again.");
+        const message =
+          error.response?.data?.message || "Publish failed. Please try again.";
+        setUploadFeedback(message);
       }
     } finally {
       setIsPublishing(false);
@@ -69,7 +115,14 @@ const Upload = () => {
       <div className="upload__container">
         <div className="upload__img-container">
           <h2 className="upload__title">Video Thumbnail</h2>
-          <video className="upload__thumb-img" poster={ThumbnailImg} />
+          <video
+            className="upload__thumb-img"
+            poster={ThumbnailImg}
+            src={videoPreviewUrl || undefined}
+            controls={Boolean(videoPreviewUrl)}
+            muted
+            playsInline
+          />
           <div className="upload__preview-panel">
             <p className="upload__preview-label">Live Preview</p>
             <h3 className="upload__preview-title">
@@ -79,9 +132,26 @@ const Upload = () => {
               {description.trim() ||
                 "A compelling summary helps viewers decide faster."}
             </p>
+            {videoFile && (
+              <p className="upload__file-meta">
+                {videoFile.name} · {(videoFile.size / (1024 * 1024)).toFixed(1)}MB
+              </p>
+            )}
           </div>
         </div>
         <form onSubmit={handleSubmit} className="upload__field">
+          <label className="upload__title--description" htmlFor="videoFile">
+            Video File
+          </label>
+          <input
+            className="upload__file-input"
+            type="file"
+            id="videoFile"
+            name="videoFile"
+            accept="video/*"
+            onChange={handleFileSelection}
+            required
+          />
           <label className="upload__title--description" htmlFor="videoTitle">
             Video Title
           </label>
@@ -119,6 +189,7 @@ const Upload = () => {
           <p className="upload__counter">
             {description.length}/{MAX_DESCRIPTION_LENGTH}
           </p>
+          {uploadFeedback && <p className="upload__feedback">{uploadFeedback}</p>}
           <div className="upload__btn-container">
             <button type="submit" className="upload__pub-btn" disabled={isPublishing}>
               {isPublishing ? "Publishing..." : "Publish"}

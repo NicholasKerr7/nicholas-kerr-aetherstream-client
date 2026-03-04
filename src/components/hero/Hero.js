@@ -8,8 +8,9 @@ function Hero({ currentVideoDetails }) {
       <div className="hero__container">
         <video
           className="hero__video"
-          src=""
+          src={currentVideoDetails.video}
           poster={currentVideoDetails.image}
+          preload="metadata"
           controls
         />
         <div className="hero__overlay">
