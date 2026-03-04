@@ -35,7 +35,7 @@ function Header({ searchQuery, onSearchChange }) {
             name="search"
             value={searchQuery}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search titles or creators"
+            placeholder="Search titles, creators, descriptions, or tags"
           />
         </label>
 

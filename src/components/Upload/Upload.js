@@ -12,20 +12,31 @@ import { useAuth } from "../../context/AuthContext";
 const MAX_TITLE_LENGTH = 70;
 const MAX_DESCRIPTION_LENGTH = 260;
 const MAX_VIDEO_UPLOAD_BYTES = 750 * 1024 * 1024;
+const CATEGORY_OPTIONS = [
+  "General",
+  "Adventure",
+  "Action Sports",
+  "Wellness",
+  "Technology",
+  "Lifestyle",
+];
 
 const Upload = () => {
   const NavigateToPage = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("General");
+  const [tagsInput, setTagsInput] = useState("");
   const [videoFile, setVideoFile] = useState(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState("");
   const [uploadFeedback, setUploadFeedback] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const { isAuthenticated, token } = useAuth();
-
-  if (!isAuthenticated) {
-    return <Navigate replace to="/auth" />;
-  }
+  const normalizedTags = tagsInput
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .slice(0, 8);
 
   useEffect(() => {
     if (!videoFile) {
@@ -40,6 +51,10 @@ const Upload = () => {
       URL.revokeObjectURL(temporaryPreviewUrl);
     };
   }, [videoFile]);
+
+  if (!isAuthenticated) {
+    return <Navigate replace to="/auth" />;
+  }
 
   const handleFileSelection = (event) => {
     const selectedFile = event.target.files?.[0];
@@ -71,6 +86,7 @@ const Upload = () => {
 
     const videoTitle = title.trim();
     const videoDescription = description.trim();
+    const selectedCategory = category.trim();
 
     if (!videoTitle || !videoDescription || !videoFile) {
       setUploadFeedback("Failed to publish. Complete all fields and attach a video.");
@@ -80,6 +96,8 @@ const Upload = () => {
     const uploadVideoFormData = new FormData();
     uploadVideoFormData.append("title", videoTitle);
     uploadVideoFormData.append("description", videoDescription);
+    uploadVideoFormData.append("category", selectedCategory);
+    uploadVideoFormData.append("tags", normalizedTags.join(","));
     uploadVideoFormData.append("video", videoFile);
 
     setUploadFeedback("");
@@ -132,6 +150,14 @@ const Upload = () => {
               {description.trim() ||
                 "A compelling summary helps viewers decide faster."}
             </p>
+            <p className="upload__preview-meta">
+              Category: {category || "General"}
+            </p>
+            {!!normalizedTags.length && (
+              <p className="upload__preview-meta">
+                Tags: {normalizedTags.join(", ")}
+              </p>
+            )}
             {videoFile && (
               <p className="upload__file-meta">
                 {videoFile.name} · {(videoFile.size / (1024 * 1024)).toFixed(1)}MB
@@ -189,6 +215,31 @@ const Upload = () => {
           <p className="upload__counter">
             {description.length}/{MAX_DESCRIPTION_LENGTH}
           </p>
+          <label className="upload__title--description" htmlFor="videoCategory">
+            Category
+          </label>
+          <select
+            className="upload__select"
+            id="videoCategory"
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+          >
+            {CATEGORY_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          <label className="upload__title--description" htmlFor="videoTags">
+            Tags
+          </label>
+          <input
+            className="upload__input"
+            id="videoTags"
+            value={tagsInput}
+            onChange={(event) => setTagsInput(event.target.value)}
+            placeholder="travel, alps, mountain"
+          />
           {uploadFeedback && <p className="upload__feedback">{uploadFeedback}</p>}
           <div className="upload__btn-container">
             <button type="submit" className="upload__pub-btn" disabled={isPublishing}>

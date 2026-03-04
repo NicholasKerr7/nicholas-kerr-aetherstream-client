@@ -27,6 +27,30 @@
   color: var(--text-muted);
 }
 
+.playlist__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.2rem;
+}
+
+.playlist__chip {
+  min-height: 3rem;
+  border-radius: 999px;
+  border: 0.1rem solid rgba(132, 187, 255, 0.24);
+  padding: 0 1rem;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  background: rgba(15, 28, 49, 0.75);
+}
+
+.playlist__chip--active {
+  border-color: transparent;
+  background: linear-gradient(128deg, var(--brand-a), var(--brand-b));
+  color: #041022;
+  font-weight: 700;
+}
+
 .playlist__empty {
   margin: 0;
   border: 0.1rem dashed rgba(132, 187, 255, 0.3);
@@ -87,6 +111,28 @@
   margin: 0.6rem 0 0;
   color: var(--text-muted);
   font-size: 1.3rem;
+}
+
+.playlist__meta {
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.8rem;
+  align-items: center;
+}
+
+.playlist__category {
+  font-size: 1.1rem;
+  color: #021024;
+  background: rgba(155, 231, 255, 0.85);
+  border-radius: 999px;
+  padding: 0.2rem 0.8rem;
+  font-weight: 700;
+}
+
+.playlist__tags {
+  font-size: 1.1rem;
+  color: var(--text-muted);
 }
 
 @include media-tablet {

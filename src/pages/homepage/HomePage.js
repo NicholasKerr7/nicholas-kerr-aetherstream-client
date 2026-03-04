@@ -14,6 +14,7 @@ import { useAuth } from "../../context/AuthContext";
 function HomePage({ searchQuery }) {
   const [playlist, setPlaylist] = useState([]);
   const [currentVideoDetails, setCurrentVideoDetails] = useState(null);
+  const [activeCategory, setActiveCategory] = useState("All");
   const [isPostingComment, setIsPostingComment] = useState(false);
   const [commentFeedback, setCommentFeedback] = useState("");
   const [likingCommentIds, setLikingCommentIds] = useState([]);
@@ -71,6 +72,29 @@ function HomePage({ searchQuery }) {
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const activeVideoId = currentVideoDetails ? currentVideoDetails.id : null;
+  const availableCategories = useMemo(() => {
+    const categories = new Set(["All"]);
+
+    playlist.forEach((video) => {
+      const category = (video.category || "").trim();
+
+      if (category) {
+        categories.add(category);
+      }
+    });
+
+    if (currentVideoDetails?.category?.trim()) {
+      categories.add(currentVideoDetails.category.trim());
+    }
+
+    return Array.from(categories);
+  }, [playlist, currentVideoDetails]);
+
+  useEffect(() => {
+    if (!availableCategories.includes(activeCategory)) {
+      setActiveCategory("All");
+    }
+  }, [availableCategories, activeCategory]);
 
   const filteredPlaylist = useMemo(
     () =>
@@ -79,13 +103,26 @@ function HomePage({ searchQuery }) {
         if (isActive) {
           return false;
         }
+        const videoCategory = (video.category || "General").trim();
+        const matchesCategory =
+          activeCategory === "All" || videoCategory === activeCategory;
+
+        if (!matchesCategory) {
+          return false;
+        }
         if (!normalizedQuery) {
           return true;
         }
-        const searchableContent = `${video.title} ${video.channel}`.toLowerCase();
+        const normalizedTags = Array.isArray(video.tags)
+          ? video.tags.join(" ")
+          : typeof video.tags === "string"
+            ? video.tags
+            : "";
+        const searchableContent =
+          `${video.title} ${video.channel} ${video.description || ""} ${videoCategory} ${normalizedTags}`.toLowerCase();
         return searchableContent.includes(normalizedQuery);
       }),
-    [playlist, activeVideoId, normalizedQuery]
+    [playlist, activeVideoId, activeCategory, normalizedQuery]
   );
 
   const routeToAuth = () => {
@@ -379,6 +416,9 @@ function HomePage({ searchQuery }) {
             currentVideoDetails={currentVideoDetails}
             playlist={filteredPlaylist}
             searchQuery={searchQuery}
+            activeCategory={activeCategory}
+            categories={availableCategories}
+            onCategoryChange={setActiveCategory}
           />
         </aside>
       </div>
