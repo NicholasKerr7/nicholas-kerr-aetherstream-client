@@ -28,6 +28,118 @@
   gap: 2rem;
 }
 
+.home__continue {
+  margin-top: 1.8rem;
+  padding: 1.4rem;
+  border-radius: 2rem;
+  border: 0.1rem solid var(--border-soft);
+  background: rgba(10, 22, 41, 0.76);
+}
+
+.home__continue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.8rem;
+}
+
+.home__continue-title {
+  margin: 0;
+  font-size: 1.9rem;
+}
+
+.home__continue-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+.home__continue-status {
+  margin: 1rem 0 0;
+  color: var(--text-muted);
+  font-size: 1.3rem;
+}
+
+.home__continue-grid {
+  margin-top: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.home__continue-card {
+  display: grid;
+  grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.9rem;
+  border-radius: 1.4rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.22);
+  background: rgba(14, 28, 49, 0.72);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.home__continue-card:hover {
+  transform: translateY(-0.1rem);
+  border-color: rgba(132, 187, 255, 0.4);
+}
+
+.home__continue-thumb-wrap {
+  position: relative;
+}
+
+.home__continue-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 1rem;
+}
+
+.home__continue-percent {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  min-height: 2.2rem;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  background: rgba(3, 11, 23, 0.82);
+  border: 0.1rem solid rgba(255, 255, 255, 0.16);
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.home__continue-content {
+  min-width: 0;
+}
+
+.home__continue-video-title {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.home__continue-channel,
+.home__continue-time,
+.home__continue-updated {
+  margin: 0.4rem 0 0;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+
+.home__continue-track {
+  margin-top: 0.7rem;
+  height: 0.6rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(132, 187, 255, 0.18);
+}
+
+.home__continue-track-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(128deg, var(--brand-a), var(--brand-b));
+}
+
 .home__primary,
 .home__rail {
   min-width: 0;
@@ -38,5 +150,13 @@
     margin-top: 2.8rem;
     grid-template-columns: minmax(0, 1.8fr) minmax(31rem, 1fr);
     align-items: start;
+  }
+
+  .home__continue {
+    padding: 1.8rem;
+  }
+
+  .home__continue-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

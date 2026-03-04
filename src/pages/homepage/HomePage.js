@@ -7,9 +7,71 @@ import { API_URL, getAuthHeaders } from "../../components/utilities/Utilities";
 import "./HomePage.scss";
 
 import axios from "axios";
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+
+const MIN_PROGRESS_UPDATE_DELTA_SECONDS = 5;
+const MIN_PROGRESS_UPDATE_INTERVAL_MS = 7000;
+const MAX_WATCH_HISTORY_ITEMS = 40;
+const MAX_CONTINUE_WATCHING_ITEMS = 6;
+const MIN_CONTINUE_PROGRESS_SECONDS = 1;
+
+const sortWatchHistoryEntries = (historyEntries = []) =>
+  [...historyEntries].sort(
+    (firstEntry, secondEntry) =>
+      (Number(secondEntry.updatedAt) || 0) - (Number(firstEntry.updatedAt) || 0)
+  );
+
+const buildWatchProgressLookup = (historyEntries = []) =>
+  historyEntries.reduce((lookup, entry) => {
+    if (entry?.videoId) {
+      lookup[entry.videoId] = entry;
+    }
+
+    return lookup;
+  }, {});
+
+const upsertWatchHistoryEntry = (historyEntries = [], nextEntry = null) => {
+  if (!nextEntry?.videoId) {
+    return historyEntries;
+  }
+
+  const nextHistory = historyEntries.filter(
+    (entry) => entry.videoId !== nextEntry.videoId
+  );
+  nextHistory.push(nextEntry);
+
+  return sortWatchHistoryEntries(nextHistory).slice(0, MAX_WATCH_HISTORY_ITEMS);
+};
+
+const formatSecondsAsTimestamp = (rawSeconds = 0) => {
+  const totalSeconds = Math.max(0, Math.round(Number(rawSeconds) || 0));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+};
+
+const formatLastWatched = (updatedAt) => {
+  const timestamp = Number(updatedAt);
+
+  if (!timestamp) {
+    return "";
+  }
+
+  return new Date(timestamp).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+};
 
 function HomePage({ searchQuery }) {
   const [playlist, setPlaylist] = useState([]);
@@ -19,6 +81,11 @@ function HomePage({ searchQuery }) {
   const [commentFeedback, setCommentFeedback] = useState("");
   const [likingCommentIds, setLikingCommentIds] = useState([]);
   const [deletingCommentIds, setDeletingCommentIds] = useState([]);
+  const [watchHistory, setWatchHistory] = useState([]);
+  const [isLoadingWatchHistory, setIsLoadingWatchHistory] = useState(false);
+  const [watchHistoryError, setWatchHistoryError] = useState("");
+  const [watchProgressByVideoId, setWatchProgressByVideoId] = useState({});
+  const lastProgressSyncByVideoIdRef = useRef({});
   const { videoId } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, token, user } = useAuth();
@@ -50,6 +117,50 @@ function HomePage({ searchQuery }) {
       });
   }, [token]);
 
+  const applyWatchHistoryEntry = useCallback((nextEntry) => {
+    if (!nextEntry?.videoId) {
+      return;
+    }
+
+    setWatchProgressByVideoId((previousLookup) => ({
+      ...previousLookup,
+      [nextEntry.videoId]: nextEntry,
+    }));
+    setWatchHistory((previousHistory) =>
+      upsertWatchHistoryEntry(previousHistory, nextEntry)
+    );
+  }, []);
+
+  const loadWatchHistory = useCallback(async () => {
+    if (!isAuthenticated || !token) {
+      setIsLoadingWatchHistory(false);
+      setWatchHistory([]);
+      setWatchProgressByVideoId({});
+      setWatchHistoryError("");
+      return;
+    }
+
+    setIsLoadingWatchHistory(true);
+    setWatchHistoryError("");
+
+    try {
+      const response = await axios.get(`${API_URL}videos/history`, {
+        headers: getAuthHeaders(token),
+      });
+      const historyEntries = Array.isArray(response.data?.history)
+        ? sortWatchHistoryEntries(response.data.history)
+        : [];
+
+      setWatchHistory(historyEntries);
+      setWatchProgressByVideoId(buildWatchProgressLookup(historyEntries));
+    } catch (error) {
+      console.log(error);
+      setWatchHistoryError("Watch history is temporarily unavailable.");
+    } finally {
+      setIsLoadingWatchHistory(false);
+    }
+  }, [isAuthenticated, token]);
+
   useEffect(() => {
     axios
       .get(`${API_URL}videos`)
@@ -60,6 +171,10 @@ function HomePage({ searchQuery }) {
         console.log(error);
       });
   }, []);
+
+  useEffect(() => {
+    loadWatchHistory();
+  }, [loadWatchHistory]);
 
   useEffect(() => {
     if (!playlist.length) {
@@ -123,6 +238,158 @@ function HomePage({ searchQuery }) {
         return searchableContent.includes(normalizedQuery);
       }),
     [playlist, activeVideoId, activeCategory, normalizedQuery]
+  );
+
+  const continueWatchingItems = useMemo(() => {
+    const videosById = new Map(playlist.map((video) => [video.id, video]));
+
+    if (currentVideoDetails?.id) {
+      videosById.set(currentVideoDetails.id, currentVideoDetails);
+    }
+
+    return watchHistory
+      .filter(
+        (entry) =>
+          !entry?.completed && Number(entry?.progressSeconds || 0) >= 1
+      )
+      .slice(0, MAX_CONTINUE_WATCHING_ITEMS)
+      .map((entry) => {
+        const entryVideo = entry.video || videosById.get(entry.videoId);
+
+        if (!entryVideo) {
+          return null;
+        }
+
+        return {
+          ...entry,
+          video: entryVideo,
+        };
+      })
+      .filter(Boolean);
+  }, [watchHistory, playlist, currentVideoDetails]);
+
+  const activeVideoWatchProgress = currentVideoDetails
+    ? watchProgressByVideoId[currentVideoDetails.id]
+    : null;
+  const resumeFromSeconds = activeVideoWatchProgress?.completed
+    ? 0
+    : Number(activeVideoWatchProgress?.progressSeconds || 0);
+
+  useEffect(() => {
+    if (!currentVideoDetails || !isAuthenticated) {
+      return;
+    }
+
+    const watchUpdatedAt = Number(currentVideoDetails.watchUpdatedAt || 0);
+
+    if (!watchUpdatedAt && !currentVideoDetails.watchProgressSeconds) {
+      return;
+    }
+
+    applyWatchHistoryEntry({
+      videoId: currentVideoDetails.id,
+      progressSeconds: Number(currentVideoDetails.watchProgressSeconds || 0),
+      durationSeconds: Number(currentVideoDetails.watchDurationSeconds || 0),
+      progressPercent: currentVideoDetails.watchCompleted
+        ? 100
+        : activeVideoWatchProgress?.progressPercent || 0,
+      completed: Boolean(currentVideoDetails.watchCompleted),
+      updatedAt: watchUpdatedAt,
+      video: {
+        id: currentVideoDetails.id,
+        title: currentVideoDetails.title,
+        channel: currentVideoDetails.channel,
+        image: currentVideoDetails.image,
+        description: currentVideoDetails.description || "",
+        duration: currentVideoDetails.duration || "0:00",
+        category: currentVideoDetails.category || "General",
+        tags: currentVideoDetails.tags || [],
+      },
+    });
+  }, [
+    applyWatchHistoryEntry,
+    activeVideoWatchProgress?.progressPercent,
+    currentVideoDetails,
+    isAuthenticated,
+  ]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      return;
+    }
+
+    lastProgressSyncByVideoIdRef.current = {};
+  }, [isAuthenticated]);
+
+  const handleVideoProgress = useCallback(
+    async ({
+      videoId: targetVideoId,
+      progressSeconds = 0,
+      durationSeconds = 0,
+      completed = false,
+      force = false,
+    }) => {
+      if (!isAuthenticated || !token || !targetVideoId) {
+        return;
+      }
+
+      const normalizedProgressSeconds = Math.max(
+        0,
+        Math.round(Number(progressSeconds) || 0)
+      );
+      const normalizedDurationSeconds = Math.max(
+        0,
+        Math.round(Number(durationSeconds) || 0)
+      );
+      const now = Date.now();
+      const lastSync = lastProgressSyncByVideoIdRef.current[targetVideoId];
+
+      if (
+        !force &&
+        normalizedProgressSeconds < MIN_CONTINUE_PROGRESS_SECONDS &&
+        !completed
+      ) {
+        return;
+      }
+
+      if (!force && lastSync) {
+        const progressDelta = Math.abs(
+          normalizedProgressSeconds - lastSync.progressSeconds
+        );
+        const timeSinceSync = now - lastSync.syncedAt;
+
+        if (
+          progressDelta < MIN_PROGRESS_UPDATE_DELTA_SECONDS &&
+          timeSinceSync < MIN_PROGRESS_UPDATE_INTERVAL_MS
+        ) {
+          return;
+        }
+      }
+
+      lastProgressSyncByVideoIdRef.current[targetVideoId] = {
+        progressSeconds: normalizedProgressSeconds,
+        syncedAt: now,
+      };
+
+      try {
+        const response = await axios.put(
+          `${API_URL}videos/${targetVideoId}/progress`,
+          {
+            progressSeconds: normalizedProgressSeconds,
+            durationSeconds: normalizedDurationSeconds,
+            completed,
+          },
+          {
+            headers: getAuthHeaders(token),
+          }
+        );
+
+        applyWatchHistoryEntry(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    [applyWatchHistoryEntry, isAuthenticated, token]
   );
 
   const routeToAuth = () => {
@@ -388,7 +655,73 @@ function HomePage({ searchQuery }) {
 
   return (
     <main className="home">
-      <Hero currentVideoDetails={currentVideoDetails} />
+      <Hero
+        currentVideoDetails={currentVideoDetails}
+        resumeFromSeconds={resumeFromSeconds}
+        onProgressChange={handleVideoProgress}
+      />
+      {isAuthenticated && (
+        <section className="home__continue">
+          <div className="home__continue-header">
+            <h2 className="home__continue-title">Continue Watching</h2>
+            <p className="home__continue-hint">Your saved progress across devices</p>
+          </div>
+          {watchHistoryError && (
+            <p className="home__continue-status">{watchHistoryError}</p>
+          )}
+          {!watchHistoryError && isLoadingWatchHistory && (
+            <p className="home__continue-status">Syncing watch history...</p>
+          )}
+          {!watchHistoryError &&
+            !isLoadingWatchHistory &&
+            !continueWatchingItems.length && (
+              <p className="home__continue-status">
+                Start watching a video and we will keep your place.
+              </p>
+            )}
+          {!watchHistoryError &&
+            !isLoadingWatchHistory &&
+            !!continueWatchingItems.length && (
+              <div className="home__continue-grid">
+                {continueWatchingItems.map((entry) => (
+                  <Link
+                    className="home__continue-card"
+                    key={entry.videoId}
+                    to={`/videos/${entry.videoId}`}
+                  >
+                    <div className="home__continue-thumb-wrap">
+                      <img
+                        className="home__continue-thumb"
+                        src={entry.video.image}
+                        alt={entry.video.title}
+                      />
+                      <span className="home__continue-percent">
+                        {entry.progressPercent || 0}%
+                      </span>
+                    </div>
+                    <div className="home__continue-content">
+                      <h3 className="home__continue-video-title">{entry.video.title}</h3>
+                      <p className="home__continue-channel">{entry.video.channel}</p>
+                      <p className="home__continue-time">
+                        {formatSecondsAsTimestamp(entry.progressSeconds)} /{" "}
+                        {formatSecondsAsTimestamp(entry.durationSeconds)}
+                      </p>
+                      <div className="home__continue-track" aria-hidden="true">
+                        <span
+                          className="home__continue-track-fill"
+                          style={{ width: `${entry.progressPercent || 0}%` }}
+                        />
+                      </div>
+                      <p className="home__continue-updated">
+                        Last watched {formatLastWatched(entry.updatedAt)}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+        </section>
+      )}
       <div className="home__grid">
         <section className="home__primary">
           <Article currentVideoDetails={currentVideoDetails} />

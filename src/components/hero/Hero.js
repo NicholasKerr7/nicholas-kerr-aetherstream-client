@@ -1,17 +1,103 @@
 import "./Hero.scss";
+import { useCallback, useEffect, useRef } from "react";
 
-function Hero({ currentVideoDetails }) {
+function Hero({
+  currentVideoDetails,
+  resumeFromSeconds = 0,
+  onProgressChange = () => {},
+}) {
+  const videoRef = useRef(null);
+  const lastAppliedResumeKeyRef = useRef("");
   const commentCount = currentVideoDetails.comments.length;
+  const activeVideoId = currentVideoDetails.id;
+
+  const emitProgress = useCallback(
+    (force = false) => {
+      const videoElement = videoRef.current;
+
+      if (!videoElement) {
+        return;
+      }
+
+      const nextProgressSeconds = Number.isFinite(videoElement.currentTime)
+        ? Math.max(0, Math.round(videoElement.currentTime))
+        : 0;
+      const nextDurationSeconds = Number.isFinite(videoElement.duration)
+        ? Math.max(0, Math.round(videoElement.duration))
+        : 0;
+      const completed =
+        nextDurationSeconds > 0 &&
+        nextProgressSeconds >= Math.max(1, nextDurationSeconds - 1);
+
+      onProgressChange({
+        videoId: activeVideoId,
+        progressSeconds: nextProgressSeconds,
+        durationSeconds: nextDurationSeconds,
+        completed,
+        force,
+      });
+    },
+    [activeVideoId, onProgressChange]
+  );
+
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    const normalizedResumeSeconds = Math.max(
+      0,
+      Math.round(Number(resumeFromSeconds) || 0)
+    );
+    const resumeKey = `${activeVideoId}:${normalizedResumeSeconds}`;
+
+    if (!videoElement || !normalizedResumeSeconds) {
+      return;
+    }
+
+    if (lastAppliedResumeKeyRef.current === resumeKey) {
+      return;
+    }
+
+    const applyResumePosition = () => {
+      const durationSeconds = Number.isFinite(videoElement.duration)
+        ? Math.round(videoElement.duration)
+        : 0;
+
+      if (durationSeconds && normalizedResumeSeconds >= durationSeconds - 1) {
+        return;
+      }
+
+      videoElement.currentTime = normalizedResumeSeconds;
+      emitProgress(true);
+    };
+
+    if (videoElement.readyState >= 1) {
+      applyResumePosition();
+    } else {
+      videoElement.addEventListener("loadedmetadata", applyResumePosition, {
+        once: true,
+      });
+    }
+
+    lastAppliedResumeKeyRef.current = resumeKey;
+
+    return () => {
+      videoElement.removeEventListener("loadedmetadata", applyResumePosition);
+    };
+  }, [activeVideoId, emitProgress, resumeFromSeconds]);
 
   return (
     <section className="hero">
       <div className="hero__container">
         <video
+          ref={videoRef}
           className="hero__video"
           src={currentVideoDetails.video}
           poster={currentVideoDetails.image}
           preload="metadata"
           controls
+          onTimeUpdate={() => emitProgress(false)}
+          onPause={() => emitProgress(true)}
+          onSeeked={() => emitProgress(true)}
+          onEnded={() => emitProgress(true)}
         />
         <div className="hero__overlay">
           <p className="hero__eyebrow">Now Streaming</p>

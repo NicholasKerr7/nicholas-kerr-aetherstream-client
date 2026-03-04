@@ -1,15 +1,53 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getAvatarUrl, getInitials } from "../../components/utilities/Utilities";
+import axios from "axios";
+import {
+  API_URL,
+  getAuthHeaders,
+  getAvatarUrl,
+  getInitials,
+} from "../../components/utilities/Utilities";
 import "./ProfilePage.scss";
 
+const formatSecondsAsTimestamp = (rawSeconds = 0) => {
+  const totalSeconds = Math.max(0, Math.round(Number(rawSeconds) || 0));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+};
+
+const formatLastWatched = (updatedAt) => {
+  const timestamp = Number(updatedAt);
+
+  if (!timestamp) {
+    return "";
+  }
+
+  return new Date(timestamp).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+};
+
 function ProfilePage() {
-  const { user, isAuthenticated, updateProfile } = useAuth();
+  const { user, token, isAuthenticated, updateProfile } = useAuth();
   const [name, setName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [watchHistory, setWatchHistory] = useState([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState("");
 
   useEffect(() => {
     if (!user) {
@@ -24,6 +62,35 @@ function ProfilePage() {
     name,
     user,
   ]);
+
+  useEffect(() => {
+    const loadWatchHistory = async () => {
+      if (!isAuthenticated || !token) {
+        setIsLoadingHistory(false);
+        setWatchHistory([]);
+        setHistoryError("");
+        return;
+      }
+
+      setIsLoadingHistory(true);
+      setHistoryError("");
+
+      try {
+        const response = await axios.get(`${API_URL}videos/history`, {
+          headers: getAuthHeaders(token),
+        });
+
+        setWatchHistory(Array.isArray(response.data?.history) ? response.data.history : []);
+      } catch (error) {
+        console.log(error);
+        setHistoryError("Watch history is temporarily unavailable.");
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+
+    loadWatchHistory();
+  }, [isAuthenticated, token]);
 
   if (!isAuthenticated) {
     return <Navigate replace to="/auth" />;
@@ -93,6 +160,55 @@ function ProfilePage() {
         </form>
 
         {statusMessage && <p className="profile-page__status">{statusMessage}</p>}
+      </div>
+
+      <div className="profile-page__card profile-page__card--history">
+        <p className="profile-page__eyebrow">Viewing Timeline</p>
+        <h2 className="profile-page__title profile-page__title--history">
+          Watch History
+        </h2>
+        {historyError && <p className="profile-page__status">{historyError}</p>}
+        {!historyError && isLoadingHistory && (
+          <p className="profile-page__status">Loading watch history...</p>
+        )}
+        {!historyError && !isLoadingHistory && !watchHistory.length && (
+          <p className="profile-page__status">
+            Watch a few videos to build your timeline.
+          </p>
+        )}
+        {!historyError && !isLoadingHistory && !!watchHistory.length && (
+          <div className="profile-page__history-list">
+            {watchHistory.map((historyEntry) => (
+              <Link
+                key={historyEntry.videoId}
+                className="profile-page__history-item"
+                to={`/videos/${historyEntry.videoId}`}
+              >
+                <img
+                  className="profile-page__history-thumb"
+                  src={historyEntry.video?.image}
+                  alt={historyEntry.video?.title}
+                />
+                <div className="profile-page__history-content">
+                  <h3 className="profile-page__history-title">
+                    {historyEntry.video?.title}
+                  </h3>
+                  <p className="profile-page__history-channel">
+                    {historyEntry.video?.channel}
+                  </p>
+                  <p className="profile-page__history-meta">
+                    {historyEntry.completed
+                      ? "Completed"
+                      : `${formatSecondsAsTimestamp(historyEntry.progressSeconds)} / ${formatSecondsAsTimestamp(historyEntry.durationSeconds)}`}
+                  </p>
+                  <p className="profile-page__history-meta">
+                    Last watched {formatLastWatched(historyEntry.updatedAt)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -1,11 +1,11 @@
 .profile-page {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  gap: 1.4rem;
   padding: 2rem 0;
 }
 
 .profile-page__card {
-  width: min(56rem, 100%);
+  width: min(72rem, 100%);
   padding: 2.2rem;
   border-radius: 2rem;
   border: 0.1rem solid var(--border-soft);
@@ -25,6 +25,10 @@
 .profile-page__title {
   margin: 0.8rem 0 0;
   font-size: 2.8rem;
+}
+
+.profile-page__title--history {
+  font-size: 2.2rem;
 }
 
 .profile-page__avatar-block {
@@ -98,4 +102,47 @@
 .profile-page__status {
   margin: 1rem 0 0;
   color: var(--text-muted);
+}
+
+.profile-page__card--history {
+  background: rgba(11, 24, 44, 0.8);
+}
+
+.profile-page__history-list {
+  margin-top: 1.4rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.profile-page__history-item {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.8rem;
+  border-radius: 1.2rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.22);
+  background: rgba(12, 28, 50, 0.72);
+}
+
+.profile-page__history-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 1rem;
+  object-fit: cover;
+}
+
+.profile-page__history-content {
+  min-width: 0;
+}
+
+.profile-page__history-title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.profile-page__history-channel,
+.profile-page__history-meta {
+  margin: 0.5rem 0 0;
+  color: var(--text-muted);
+  font-size: 1.2rem;
 }
