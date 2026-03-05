@@ -139,6 +139,128 @@
   gap: 0.6rem;
 }
 
+.header__notifications {
+  position: relative;
+}
+
+.header__notifications-btn {
+  position: relative;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 50%;
+  border: 0.1rem solid var(--border-soft);
+  background: rgba(15, 30, 53, 0.85);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #cfe5ff;
+}
+
+.header__notifications-btn--active {
+  border-color: rgba(77, 197, 255, 0.7);
+}
+
+.header__notifications-icon {
+  width: 1.8rem;
+  height: 1.8rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+
+.header__notifications-badge {
+  position: absolute;
+  top: -0.3rem;
+  right: -0.2rem;
+  min-width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 999px;
+  padding: 0 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #031224;
+  background: linear-gradient(128deg, #9be7ff, #7ac7ff);
+}
+
+.header__notifications-menu {
+  position: absolute;
+  top: calc(100% + 0.8rem);
+  right: 0;
+  width: min(34rem, calc(100vw - 3rem));
+  max-height: min(48rem, 65vh);
+  overflow: hidden;
+  border-radius: 1.2rem;
+  border: 0.1rem solid var(--border-soft);
+  background: rgba(8, 18, 34, 0.95);
+  box-shadow: 0 1.4rem 3rem rgba(5, 11, 20, 0.55);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.header__notifications-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 1rem 1.2rem;
+  border-bottom: 0.1rem solid rgba(132, 187, 255, 0.2);
+}
+
+.header__notifications-title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.header__notifications-mark-read {
+  border: none;
+  background: transparent;
+  color: var(--brand-a);
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.header__notifications-status {
+  margin: 0;
+  padding: 1.2rem;
+  font-size: 1.3rem;
+  color: var(--text-muted);
+}
+
+.header__notifications-list {
+  overflow-y: auto;
+}
+
+.header__notification-item {
+  display: block;
+  padding: 1rem 1.2rem;
+  border-top: 0.1rem solid rgba(132, 187, 255, 0.12);
+}
+
+.header__notification-item:hover {
+  background: rgba(77, 197, 255, 0.1);
+}
+
+.header__notification-item--unread {
+  background: rgba(77, 197, 255, 0.12);
+}
+
+.header__notification-message {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.4;
+}
+
+.header__notification-time {
+  margin: 0.5rem 0 0;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
 .header__profile-pill {
   height: 4.4rem;
   border-radius: 999px;
