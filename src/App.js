@@ -12,6 +12,7 @@ import UploadPage from "./pages/uploadpage/UploadPage";
 import AuthPage from "./pages/authpage/AuthPage";
 import ProfilePage from "./pages/profilepage/ProfilePage";
 import CreatorPage from "./pages/creatorpage/CreatorPage";
+import NotificationsPage from "./pages/notificationspage/NotificationsPage";
 import Header from "./components/header/Header";
 import { useAuth } from "./context/AuthContext";
 
@@ -68,6 +69,14 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <NotificationsPage />
                 </ProtectedRoute>
               }
             />

@@ -39,6 +39,18 @@ const formatNotificationTime = (timestamp) => {
   });
 };
 
+const getNotificationTargetPath = (notification = {}) => {
+  if (notification.videoId) {
+    return `/videos/${notification.videoId}`;
+  }
+
+  if (notification.creatorId) {
+    return `/creators/${notification.creatorId}`;
+  }
+
+  return "/notifications";
+};
+
 function Header({ searchQuery, onSearchChange }) {
   const { isAuthenticated, user, token, logout } = useAuth();
   const [avatarBroken, setAvatarBroken] = useState(false);
@@ -253,6 +265,13 @@ function Header({ searchQuery, onSearchChange }) {
                       </button>
                     )}
                   </div>
+                  <Link
+                    className="header__notifications-view-all"
+                    to="/notifications"
+                    onClick={() => setIsNotificationsOpen(false)}
+                  >
+                    View all and preferences
+                  </Link>
                   {notificationsError && (
                     <p className="header__notifications-status">{notificationsError}</p>
                   )}
@@ -274,7 +293,7 @@ function Header({ searchQuery, onSearchChange }) {
                           <Link
                             key={notification.id}
                             className={`header__notification-item ${notification.isRead ? "" : "header__notification-item--unread"}`}
-                            to={notification.videoId ? `/videos/${notification.videoId}` : "/"}
+                            to={getNotificationTargetPath(notification)}
                             onClick={() => {
                               setIsNotificationsOpen(false);
                               markNotificationAsRead(notification.id);
