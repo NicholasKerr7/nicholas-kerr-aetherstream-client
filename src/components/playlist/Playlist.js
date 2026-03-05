@@ -6,12 +6,18 @@ function Playlist({
   currentVideoDetails,
   playlist,
   searchQuery,
+  feedModes = [],
+  activeFeedMode = "for-you",
+  onFeedModeChange = () => {},
+  isLoadingFeed = false,
+  feedError = "",
+  isAuthenticated = false,
   activeCategory = "All",
   categories = ["All"],
   onCategoryChange = () => {},
 }) {
   const filteredVideos = playlist.filter(
-    (video) => currentVideoDetails.id !== video.id
+    (video) => currentVideoDetails?.id !== video.id
   );
   const normalizedSearch = searchQuery.trim();
   const orderedCategories = useMemo(() => {
@@ -22,6 +28,27 @@ function Playlist({
 
     return ["All", ...nonAllCategories];
   }, [categories]);
+  const orderedFeedModes = useMemo(() => {
+    const fallbackFeedModes = [
+      { id: "for-you", label: "For You" },
+      { id: "following", label: "Following" },
+      { id: "trending", label: "Trending" },
+    ];
+    const safeFeedModes = Array.isArray(feedModes) ? feedModes : [];
+
+    if (!safeFeedModes.length) {
+      return fallbackFeedModes;
+    }
+
+    return safeFeedModes.filter(
+      (feedMode) => typeof feedMode?.id === "string" && feedMode.label
+    );
+  }, [feedModes]);
+  const activeFeedModeLabel =
+    orderedFeedModes.find((feedMode) => feedMode.id === activeFeedMode)?.label ||
+    "Curated";
+  const isFollowingMode = activeFeedMode === "following";
+  const showSignInHint = isFollowingMode && !isAuthenticated && !feedError;
 
   const activeFilters = [];
 
@@ -38,10 +65,25 @@ function Playlist({
       <div className="playlist__header">
         <h2 className="playlist__title">Up Next</h2>
         <p className="playlist__hint">
-          {activeFilters.length
+          {isLoadingFeed
+            ? `Refreshing ${activeFeedModeLabel} feed...`
+            : activeFilters.length
             ? `Filtered by ${activeFilters.join(" • ")}`
-            : "Curated for your queue"}
+            : `${activeFeedModeLabel} recommendations`}
         </p>
+      </div>
+
+      <div className="playlist__feed-modes">
+        {orderedFeedModes.map((feedMode) => (
+          <button
+            key={feedMode.id}
+            type="button"
+            className={`playlist__feed-mode ${activeFeedMode === feedMode.id ? "playlist__feed-mode--active" : ""}`}
+            onClick={() => onFeedModeChange(feedMode.id)}
+          >
+            {feedMode.label}
+          </button>
+        ))}
       </div>
 
       <div className="playlist__chips">
@@ -56,6 +98,13 @@ function Playlist({
           </button>
         ))}
       </div>
+
+      {feedError && <p className="playlist__status">{feedError}</p>}
+      {showSignInHint && (
+        <p className="playlist__status">
+          Sign in and follow creators to unlock the Following feed.
+        </p>
+      )}
 
       {!filteredVideos.length && (
         <p className="playlist__empty">

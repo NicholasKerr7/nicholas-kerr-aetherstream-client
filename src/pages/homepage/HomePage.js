@@ -16,7 +16,16 @@ const MIN_PROGRESS_UPDATE_INTERVAL_MS = 7000;
 const MAX_WATCH_HISTORY_ITEMS = 40;
 const MAX_CONTINUE_WATCHING_ITEMS = 6;
 const MAX_FOLLOWING_FEED_ITEMS = 8;
+const MAX_PERSONALIZED_FEED_ITEMS = 80;
 const MIN_CONTINUE_PROGRESS_SECONDS = 1;
+const FEED_MODE_FOR_YOU = "for-you";
+const FEED_MODE_FOLLOWING = "following";
+const FEED_MODE_TRENDING = "trending";
+const HOME_FEED_MODES = [
+  { id: FEED_MODE_FOR_YOU, label: "For You" },
+  { id: FEED_MODE_FOLLOWING, label: "Following" },
+  { id: FEED_MODE_TRENDING, label: "Trending" },
+];
 
 const sortWatchHistoryEntries = (historyEntries = []) =>
   [...historyEntries].sort(
@@ -203,6 +212,9 @@ function HomePage({ searchQuery }) {
   const [isLoadingWatchHistory, setIsLoadingWatchHistory] = useState(false);
   const [watchHistoryError, setWatchHistoryError] = useState("");
   const [watchProgressByVideoId, setWatchProgressByVideoId] = useState({});
+  const [activeFeedMode, setActiveFeedMode] = useState(FEED_MODE_FOR_YOU);
+  const [isLoadingFeed, setIsLoadingFeed] = useState(false);
+  const [feedError, setFeedError] = useState("");
   const [followingFeed, setFollowingFeed] = useState([]);
   const [isLoadingFollowingFeed, setIsLoadingFollowingFeed] = useState(false);
   const [followingFeedError, setFollowingFeedError] = useState("");
@@ -323,16 +335,57 @@ function HomePage({ searchQuery }) {
     }
   }, [isAuthenticated, token]);
 
-  useEffect(() => {
-    axios
-      .get(`${API_URL}videos`)
-      .then((response) => {
-        setPlaylist(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
+  const loadPersonalizedFeed = useCallback(async () => {
+    setIsLoadingFeed(true);
+    setFeedError("");
+
+    try {
+      const response = await axios.get(`${API_URL}videos/feed`, {
+        params: {
+          mode: activeFeedMode,
+          limit: MAX_PERSONALIZED_FEED_ITEMS,
+        },
+        headers: getAuthHeaders(token),
       });
-  }, []);
+      const nextFeed = Array.isArray(response.data?.videos)
+        ? response.data.videos
+        : [];
+      const resolvedMode = response.data?.mode;
+
+      if (
+        typeof resolvedMode === "string" &&
+        resolvedMode &&
+        resolvedMode !== activeFeedMode
+      ) {
+        setActiveFeedMode(resolvedMode);
+      }
+
+      setPlaylist(nextFeed);
+    } catch (error) {
+      console.log(error);
+      setFeedError("Personalized feed is temporarily unavailable.");
+
+      try {
+        const fallbackResponse = await axios.get(`${API_URL}videos`, {
+          headers: getAuthHeaders(token),
+        });
+        const fallbackVideos = Array.isArray(fallbackResponse.data)
+          ? fallbackResponse.data
+          : [];
+
+        setPlaylist(fallbackVideos);
+      } catch (fallbackError) {
+        console.log(fallbackError);
+        setPlaylist([]);
+      }
+    } finally {
+      setIsLoadingFeed(false);
+    }
+  }, [activeFeedMode, token]);
+
+  useEffect(() => {
+    loadPersonalizedFeed();
+  }, [loadPersonalizedFeed]);
 
   useEffect(() => {
     loadWatchHistory();
@@ -635,6 +688,7 @@ function HomePage({ searchQuery }) {
       });
 
       loadFollowingFeed();
+      loadPersonalizedFeed();
     } catch (error) {
       console.log(error);
 
@@ -1180,6 +1234,12 @@ function HomePage({ searchQuery }) {
             currentVideoDetails={currentVideoDetails}
             playlist={filteredPlaylist}
             searchQuery={searchQuery}
+            feedModes={HOME_FEED_MODES}
+            activeFeedMode={activeFeedMode}
+            onFeedModeChange={setActiveFeedMode}
+            isLoadingFeed={isLoadingFeed}
+            feedError={feedError}
+            isAuthenticated={isAuthenticated}
             activeCategory={activeCategory}
             categories={availableCategories}
             onCategoryChange={setActiveCategory}
