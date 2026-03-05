@@ -206,6 +206,8 @@ function HomePage({ searchQuery }) {
   const [followingFeed, setFollowingFeed] = useState([]);
   const [isLoadingFollowingFeed, setIsLoadingFollowingFeed] = useState(false);
   const [followingFeedError, setFollowingFeedError] = useState("");
+  const [isUpdatingCreatorFollow, setIsUpdatingCreatorFollow] = useState(false);
+  const [creatorFollowFeedback, setCreatorFollowFeedback] = useState("");
   const lastProgressSyncByVideoIdRef = useRef({});
   const { videoId } = useParams();
   const navigate = useNavigate();
@@ -232,6 +234,8 @@ function HomePage({ searchQuery }) {
       .then((response) => {
         setCurrentVideoDetails(response.data);
         setCommentFeedback("");
+        setCreatorFollowFeedback("");
+        setIsUpdatingCreatorFollow(false);
         setReplyingToCommentId("");
         setLikingCommentIds([]);
         setDeletingCommentIds([]);
@@ -557,6 +561,110 @@ function HomePage({ searchQuery }) {
   const routeToAuth = () => {
     setCommentFeedback("Sign in to interact with the conversation.");
     navigate("/auth");
+  };
+
+  const handleToggleCreatorFollow = async () => {
+    if (!currentVideoDetails?.creatorId || isUpdatingCreatorFollow) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setCreatorFollowFeedback("Sign in to follow creators.");
+      navigate("/auth");
+      return;
+    }
+
+    if (user?.id && currentVideoDetails.creatorId === user.id) {
+      return;
+    }
+
+    const videoIdForAction = currentVideoDetails.id;
+    const creatorIdForAction = currentVideoDetails.creatorId;
+    const previousIsFollowed = Boolean(
+      currentVideoDetails.isCreatorFollowedByCurrentUser
+    );
+    const previousFollowersCount = Math.max(
+      0,
+      Number(currentVideoDetails.creatorFollowersCount) || 0
+    );
+    const nextIsFollowed = !previousIsFollowed;
+    const nextFollowersCount = Math.max(
+      0,
+      previousFollowersCount + (nextIsFollowed ? 1 : -1)
+    );
+
+    setCreatorFollowFeedback("");
+    setIsUpdatingCreatorFollow(true);
+
+    setCurrentVideoDetails((previousVideo) => {
+      if (!previousVideo || previousVideo.id !== videoIdForAction) {
+        return previousVideo;
+      }
+
+      return {
+        ...previousVideo,
+        isCreatorFollowedByCurrentUser: nextIsFollowed,
+        creatorFollowersCount: nextFollowersCount,
+      };
+    });
+
+    try {
+      const response = await axios.put(
+        `${API_URL}creators/${creatorIdForAction}/follow`,
+        {
+          following: nextIsFollowed,
+        },
+        {
+          headers: getAuthHeaders(token),
+        }
+      );
+
+      setCurrentVideoDetails((previousVideo) => {
+        if (!previousVideo || previousVideo.id !== videoIdForAction) {
+          return previousVideo;
+        }
+
+        return {
+          ...previousVideo,
+          isCreatorFollowedByCurrentUser: Boolean(response.data?.following),
+          creatorFollowersCount: Math.max(
+            0,
+            Number(response.data?.followersCount) || 0
+          ),
+        };
+      });
+
+      loadFollowingFeed();
+    } catch (error) {
+      console.log(error);
+
+      setCurrentVideoDetails((previousVideo) => {
+        if (!previousVideo || previousVideo.id !== videoIdForAction) {
+          return previousVideo;
+        }
+
+        return {
+          ...previousVideo,
+          isCreatorFollowedByCurrentUser: previousIsFollowed,
+          creatorFollowersCount: previousFollowersCount,
+        };
+      });
+
+      const failureMessage =
+        error.response?.status === 401
+          ? "Your session expired. Please sign in again."
+          : error.response?.status === 400
+            ? "You cannot follow your own creator profile."
+            : "Could not update follow status. Please try again.";
+
+      setCreatorFollowFeedback(failureMessage);
+
+      if (error.response?.status === 401) {
+        navigate("/auth");
+      }
+    } finally {
+      setIsUpdatingCreatorFollow(false);
+    }
   };
 
   const handleCreateComment = async (commentText) => {
@@ -1037,7 +1145,13 @@ function HomePage({ searchQuery }) {
       )}
       <div className="home__grid">
         <section className="home__primary">
-          <Article currentVideoDetails={currentVideoDetails} />
+          <Article
+            currentVideoDetails={currentVideoDetails}
+            onToggleCreatorFollow={handleToggleCreatorFollow}
+            isUpdatingCreatorFollow={isUpdatingCreatorFollow}
+            creatorFollowFeedback={creatorFollowFeedback}
+            currentUserId={user?.id || ""}
+          />
           <Form
             commentCount={countThreadComments(comments)}
             onSubmitComment={handleCreateComment}

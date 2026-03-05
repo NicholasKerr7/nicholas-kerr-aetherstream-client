@@ -33,6 +33,10 @@
   margin: 0;
 }
 
+.article__followers {
+  margin: 0;
+}
+
 .article__author {
   color: var(--text-main);
   font-weight: 600;
@@ -40,6 +44,34 @@
 
 .article__author-link:hover {
   color: var(--brand-a);
+}
+
+.article__follow-btn {
+  min-height: 2.8rem;
+  border-radius: 999px;
+  border: 0.1rem solid rgba(132, 187, 255, 0.28);
+  padding: 0 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  background: rgba(132, 187, 255, 0.12);
+  color: #dcecff;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.article__follow-btn--active {
+  background: rgba(167, 255, 212, 0.16);
+  color: #d6ffe9;
+}
+
+.article__follow-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.article__follow-feedback {
+  margin: 0.8rem 0 0;
+  font-size: 1.2rem;
+  color: #ffcfd9;
 }
 
 .article__metrics {

@@ -3,10 +3,30 @@ import views from "../../assets/Icons/views.svg";
 import likes from "../../assets/Icons/likes.svg";
 import { Link } from "react-router-dom";
 
-function Article({ currentVideoDetails }) {
+const formatCompactNumber = (value) =>
+  new Intl.NumberFormat("en-US", { notation: "compact" }).format(
+    Math.max(0, Number(value) || 0)
+  );
+
+function Article({
+  currentVideoDetails,
+  onToggleCreatorFollow,
+  isUpdatingCreatorFollow = false,
+  creatorFollowFeedback = "",
+  currentUserId = "",
+}) {
   const date = new Date(currentVideoDetails.timestamp).toLocaleDateString(
     "en-US",
     { month: "short", day: "numeric", year: "numeric" }
+  );
+  const isOwnCreator = Boolean(
+    currentUserId && currentVideoDetails.creatorId === currentUserId
+  );
+  const isFollowingCreator = Boolean(
+    currentVideoDetails.isCreatorFollowedByCurrentUser
+  );
+  const creatorFollowersCount = formatCompactNumber(
+    currentVideoDetails.creatorFollowersCount || 0
   );
 
   return (
@@ -26,7 +46,29 @@ function Article({ currentVideoDetails }) {
               <p className="article__author">By {currentVideoDetails.channel}</p>
             )}
             <p className="article__date">{date}</p>
+            {currentVideoDetails.creatorId && (
+              <p className="article__followers">
+                {creatorFollowersCount} followers
+              </p>
+            )}
+            {!isOwnCreator && currentVideoDetails.creatorId && (
+              <button
+                className={`article__follow-btn ${isFollowingCreator ? "article__follow-btn--active" : ""}`}
+                type="button"
+                disabled={isUpdatingCreatorFollow}
+                onClick={onToggleCreatorFollow}
+              >
+                {isUpdatingCreatorFollow
+                  ? "Updating..."
+                  : isFollowingCreator
+                    ? "Following"
+                    : "Follow"}
+              </button>
+            )}
           </div>
+          {creatorFollowFeedback && (
+            <p className="article__follow-feedback">{creatorFollowFeedback}</p>
+          )}
         </div>
         <div className="article__metrics">
           <div className="article__metric">
