@@ -1,6 +1,7 @@
 import "./Article.scss";
 import views from "../../assets/Icons/views.svg";
 import likes from "../../assets/Icons/likes.svg";
+import { Link } from "react-router-dom";
 
 function Article({ currentVideoDetails }) {
   const date = new Date(currentVideoDetails.timestamp).toLocaleDateString(
@@ -14,7 +15,16 @@ function Article({ currentVideoDetails }) {
         <div className="article__heading">
           <h1 className="article__title">{currentVideoDetails.title}</h1>
           <div className="article__meta">
-            <p className="article__author">By {currentVideoDetails.channel}</p>
+            {currentVideoDetails.creatorId ? (
+              <Link
+                className="article__author article__author-link"
+                to={`/creators/${currentVideoDetails.creatorId}`}
+              >
+                By {currentVideoDetails.channel}
+              </Link>
+            ) : (
+              <p className="article__author">By {currentVideoDetails.channel}</p>
+            )}
             <p className="article__date">{date}</p>
           </div>
         </div>

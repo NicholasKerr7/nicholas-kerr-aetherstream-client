@@ -140,6 +140,88 @@
   background: linear-gradient(128deg, var(--brand-a), var(--brand-b));
 }
 
+.home__following {
+  margin-top: 1.8rem;
+  padding: 1.4rem;
+  border-radius: 2rem;
+  border: 0.1rem solid var(--border-soft);
+  background: rgba(10, 22, 41, 0.72);
+}
+
+.home__following-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.8rem;
+}
+
+.home__following-title {
+  margin: 0;
+  font-size: 1.9rem;
+}
+
+.home__following-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+.home__following-status {
+  margin: 1rem 0 0;
+  color: var(--text-muted);
+  font-size: 1.3rem;
+}
+
+.home__following-grid {
+  margin-top: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.home__following-card {
+  display: grid;
+  grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.9rem;
+  border-radius: 1.4rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.2);
+  background: rgba(13, 27, 47, 0.72);
+}
+
+.home__following-thumb-link {
+  display: block;
+}
+
+.home__following-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 1rem;
+}
+
+.home__following-content {
+  min-width: 0;
+}
+
+.home__following-video-title {
+  display: inline-block;
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.home__following-channel {
+  display: block;
+  margin: 0.4rem 0 0;
+  color: var(--brand-a);
+  font-size: 1.2rem;
+}
+
+.home__following-meta {
+  margin: 0.4rem 0 0;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
 .home__primary,
 .home__rail {
   min-width: 0;
@@ -157,6 +239,14 @@
   }
 
   .home__continue-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home__following {
+    padding: 1.8rem;
+  }
+
+  .home__following-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

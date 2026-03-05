@@ -15,6 +15,7 @@ const MIN_PROGRESS_UPDATE_DELTA_SECONDS = 5;
 const MIN_PROGRESS_UPDATE_INTERVAL_MS = 7000;
 const MAX_WATCH_HISTORY_ITEMS = 40;
 const MAX_CONTINUE_WATCHING_ITEMS = 6;
+const MAX_FOLLOWING_FEED_ITEMS = 8;
 const MIN_CONTINUE_PROGRESS_SECONDS = 1;
 
 const sortWatchHistoryEntries = (historyEntries = []) =>
@@ -73,6 +74,20 @@ const formatLastWatched = (updatedAt) => {
   });
 };
 
+const formatPublishedDate = (timestamp) => {
+  const numericTimestamp = Number(timestamp);
+
+  if (!numericTimestamp) {
+    return "";
+  }
+
+  return new Date(numericTimestamp).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 function HomePage({ searchQuery }) {
   const [playlist, setPlaylist] = useState([]);
   const [currentVideoDetails, setCurrentVideoDetails] = useState(null);
@@ -85,6 +100,9 @@ function HomePage({ searchQuery }) {
   const [isLoadingWatchHistory, setIsLoadingWatchHistory] = useState(false);
   const [watchHistoryError, setWatchHistoryError] = useState("");
   const [watchProgressByVideoId, setWatchProgressByVideoId] = useState({});
+  const [followingFeed, setFollowingFeed] = useState([]);
+  const [isLoadingFollowingFeed, setIsLoadingFollowingFeed] = useState(false);
+  const [followingFeedError, setFollowingFeedError] = useState("");
   const lastProgressSyncByVideoIdRef = useRef({});
   const { videoId } = useParams();
   const navigate = useNavigate();
@@ -161,6 +179,40 @@ function HomePage({ searchQuery }) {
     }
   }, [isAuthenticated, token]);
 
+  const loadFollowingFeed = useCallback(async () => {
+    if (!isAuthenticated || !token) {
+      setIsLoadingFollowingFeed(false);
+      setFollowingFeed([]);
+      setFollowingFeedError("");
+      return;
+    }
+
+    setIsLoadingFollowingFeed(true);
+    setFollowingFeedError("");
+
+    try {
+      const response = await axios.get(`${API_URL}videos/following`, {
+        headers: getAuthHeaders(token),
+      });
+      const feedVideos = Array.isArray(response.data?.videos)
+        ? [...response.data.videos]
+            .sort(
+              (firstVideo, secondVideo) =>
+                (Number(secondVideo.timestamp) || 0) -
+                (Number(firstVideo.timestamp) || 0)
+            )
+            .slice(0, MAX_FOLLOWING_FEED_ITEMS)
+        : [];
+
+      setFollowingFeed(feedVideos);
+    } catch (error) {
+      console.log(error);
+      setFollowingFeedError("Following feed is temporarily unavailable.");
+    } finally {
+      setIsLoadingFollowingFeed(false);
+    }
+  }, [isAuthenticated, token]);
+
   useEffect(() => {
     axios
       .get(`${API_URL}videos`)
@@ -175,6 +227,10 @@ function HomePage({ searchQuery }) {
   useEffect(() => {
     loadWatchHistory();
   }, [loadWatchHistory]);
+
+  useEffect(() => {
+    loadFollowingFeed();
+  }, [loadFollowingFeed]);
 
   useEffect(() => {
     if (!playlist.length) {
@@ -717,6 +773,64 @@ function HomePage({ searchQuery }) {
                       </p>
                     </div>
                   </Link>
+                ))}
+              </div>
+            )}
+        </section>
+      )}
+      {isAuthenticated && (
+        <section className="home__following">
+          <div className="home__following-header">
+            <h2 className="home__following-title">Following Feed</h2>
+            <p className="home__following-hint">Fresh drops from creators you follow</p>
+          </div>
+          {followingFeedError && (
+            <p className="home__following-status">{followingFeedError}</p>
+          )}
+          {!followingFeedError && isLoadingFollowingFeed && (
+            <p className="home__following-status">Loading following feed...</p>
+          )}
+          {!followingFeedError &&
+            !isLoadingFollowingFeed &&
+            !followingFeed.length && (
+              <p className="home__following-status">
+                Follow creators from any video profile to build this feed.
+              </p>
+            )}
+          {!followingFeedError &&
+            !isLoadingFollowingFeed &&
+            !!followingFeed.length && (
+              <div className="home__following-grid">
+                {followingFeed.map((video) => (
+                  <article className="home__following-card" key={video.id}>
+                    <Link className="home__following-thumb-link" to={`/videos/${video.id}`}>
+                      <img
+                        className="home__following-thumb"
+                        src={video.image}
+                        alt={video.title}
+                      />
+                    </Link>
+                    <div className="home__following-content">
+                      <Link className="home__following-video-title" to={`/videos/${video.id}`}>
+                        {video.title}
+                      </Link>
+                      {video.creatorId ? (
+                        <Link
+                          className="home__following-channel"
+                          to={`/creators/${video.creatorId}`}
+                        >
+                          {video.channel}
+                        </Link>
+                      ) : (
+                        <p className="home__following-channel">{video.channel}</p>
+                      )}
+                      <p className="home__following-meta">
+                        {video.duration || "0:00"}
+                        {formatPublishedDate(video.timestamp) &&
+                          ` • ${formatPublishedDate(video.timestamp)}`}
+                      </p>
+                    </div>
+                  </article>
                 ))}
               </div>
             )}

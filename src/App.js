@@ -11,6 +11,7 @@ import HomePage from "./pages/homepage/HomePage";
 import UploadPage from "./pages/uploadpage/UploadPage";
 import AuthPage from "./pages/authpage/AuthPage";
 import ProfilePage from "./pages/profilepage/ProfilePage";
+import CreatorPage from "./pages/creatorpage/CreatorPage";
 import Header from "./components/header/Header";
 import { useAuth } from "./context/AuthContext";
 
@@ -61,6 +62,7 @@ const App = () => {
               element={<HomePage searchQuery={searchQuery} />}
             />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/creators/:creatorId" element={<CreatorPage />} />
             <Route
               path="/profile"
               element={
