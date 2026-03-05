@@ -39,6 +39,15 @@ const formatLastWatched = (updatedAt) => {
   });
 };
 
+const ANALYTICS_WINDOWS = [7, 30, 90];
+
+const formatCompactNumber = (value) =>
+  new Intl.NumberFormat("en-US", { notation: "compact" }).format(
+    Math.max(0, Number(value) || 0)
+  );
+
+const formatPercent = (value) => `${Math.max(0, Math.round(Number(value) || 0))}%`;
+
 function ProfilePage() {
   const { user, token, isAuthenticated, updateProfile } = useAuth();
   const [name, setName] = useState("");
@@ -48,6 +57,10 @@ function ProfilePage() {
   const [watchHistory, setWatchHistory] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState("");
+  const [selectedAnalyticsWindowDays, setSelectedAnalyticsWindowDays] = useState(30);
+  const [creatorAnalytics, setCreatorAnalytics] = useState(null);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState("");
 
   useEffect(() => {
     if (!user) {
@@ -92,6 +105,38 @@ function ProfilePage() {
     loadWatchHistory();
   }, [isAuthenticated, token]);
 
+  useEffect(() => {
+    const loadCreatorAnalytics = async () => {
+      if (!isAuthenticated || !token) {
+        setIsLoadingAnalytics(false);
+        setCreatorAnalytics(null);
+        setAnalyticsError("");
+        return;
+      }
+
+      setIsLoadingAnalytics(true);
+      setAnalyticsError("");
+
+      try {
+        const response = await axios.get(
+          `${API_URL}creators/me/analytics?windowDays=${selectedAnalyticsWindowDays}`,
+          {
+            headers: getAuthHeaders(token),
+          }
+        );
+
+        setCreatorAnalytics(response.data || null);
+      } catch (error) {
+        console.log(error);
+        setAnalyticsError("Creator analytics are temporarily unavailable.");
+      } finally {
+        setIsLoadingAnalytics(false);
+      }
+    };
+
+    loadCreatorAnalytics();
+  }, [isAuthenticated, selectedAnalyticsWindowDays, token]);
+
   if (!isAuthenticated) {
     return <Navigate replace to="/auth" />;
   }
@@ -110,6 +155,12 @@ function ProfilePage() {
       setIsSaving(false);
     }
   };
+
+  const analyticsOverview = creatorAnalytics?.overview || null;
+  const analyticsWindow = creatorAnalytics?.window || null;
+  const analyticsTopVideos = Array.isArray(creatorAnalytics?.topVideos)
+    ? creatorAnalytics.topVideos
+    : [];
 
   return (
     <section className="profile-page">
@@ -160,6 +211,166 @@ function ProfilePage() {
         </form>
 
         {statusMessage && <p className="profile-page__status">{statusMessage}</p>}
+      </div>
+
+      <div className="profile-page__card profile-page__card--analytics">
+        <div className="profile-page__analytics-head">
+          <div>
+            <p className="profile-page__eyebrow">Creator Studio</p>
+            <h2 className="profile-page__title profile-page__title--history">
+              Analytics
+            </h2>
+          </div>
+          <div className="profile-page__analytics-window">
+            {ANALYTICS_WINDOWS.map((windowDays) => (
+              <button
+                key={windowDays}
+                className={`profile-page__analytics-window-btn ${selectedAnalyticsWindowDays === windowDays ? "profile-page__analytics-window-btn--active" : ""}`}
+                type="button"
+                onClick={() => setSelectedAnalyticsWindowDays(windowDays)}
+              >
+                {windowDays}d
+              </button>
+            ))}
+          </div>
+        </div>
+        {analyticsError && <p className="profile-page__status">{analyticsError}</p>}
+        {!analyticsError && isLoadingAnalytics && (
+          <p className="profile-page__status">Loading creator analytics...</p>
+        )}
+        {!analyticsError && !isLoadingAnalytics && !analyticsOverview && (
+          <p className="profile-page__status">
+            Publish videos to unlock your studio analytics.
+          </p>
+        )}
+        {!analyticsError && !isLoadingAnalytics && analyticsOverview && (
+          <>
+            <div className="profile-page__analytics-grid">
+              <article className="profile-page__analytics-stat">
+                <p className="profile-page__analytics-stat-label">Total Videos</p>
+                <p className="profile-page__analytics-stat-value">
+                  {formatCompactNumber(analyticsOverview.totalVideos)}
+                </p>
+              </article>
+              <article className="profile-page__analytics-stat">
+                <p className="profile-page__analytics-stat-label">Total Views</p>
+                <p className="profile-page__analytics-stat-value">
+                  {formatCompactNumber(analyticsOverview.totalViews)}
+                </p>
+              </article>
+              <article className="profile-page__analytics-stat">
+                <p className="profile-page__analytics-stat-label">Total Likes</p>
+                <p className="profile-page__analytics-stat-value">
+                  {formatCompactNumber(analyticsOverview.totalLikes)}
+                </p>
+              </article>
+              <article className="profile-page__analytics-stat">
+                <p className="profile-page__analytics-stat-label">Total Comments</p>
+                <p className="profile-page__analytics-stat-value">
+                  {formatCompactNumber(analyticsOverview.totalComments)}
+                </p>
+              </article>
+              <article className="profile-page__analytics-stat">
+                <p className="profile-page__analytics-stat-label">Followers</p>
+                <p className="profile-page__analytics-stat-value">
+                  {formatCompactNumber(analyticsOverview.totalFollowers)}
+                </p>
+              </article>
+              <article className="profile-page__analytics-stat">
+                <p className="profile-page__analytics-stat-label">Watch Hours</p>
+                <p className="profile-page__analytics-stat-value">
+                  {analyticsOverview.watchHours || 0}h
+                </p>
+              </article>
+              <article className="profile-page__analytics-stat">
+                <p className="profile-page__analytics-stat-label">Avg Completion</p>
+                <p className="profile-page__analytics-stat-value">
+                  {formatPercent(analyticsOverview.averageCompletionRatePercent)}
+                </p>
+              </article>
+              <article className="profile-page__analytics-stat">
+                <p className="profile-page__analytics-stat-label">Avg Watch Time</p>
+                <p className="profile-page__analytics-stat-value">
+                  {formatSecondsAsTimestamp(analyticsOverview.averageWatchTimeSeconds)}
+                </p>
+              </article>
+            </div>
+
+            <div className="profile-page__analytics-window-summary">
+              <h3 className="profile-page__analytics-window-title">
+                Last {analyticsWindow?.days || selectedAnalyticsWindowDays} Days
+              </h3>
+              <div className="profile-page__analytics-window-grid">
+                <p className="profile-page__analytics-window-item">
+                  <span>New uploads</span>
+                  <strong>{analyticsWindow?.uploadedVideos || 0}</strong>
+                </p>
+                <p className="profile-page__analytics-window-item">
+                  <span>New comments</span>
+                  <strong>{formatCompactNumber(analyticsWindow?.comments || 0)}</strong>
+                </p>
+                <p className="profile-page__analytics-window-item">
+                  <span>Comment likes</span>
+                  <strong>{formatCompactNumber(analyticsWindow?.commentLikes || 0)}</strong>
+                </p>
+                <p className="profile-page__analytics-window-item">
+                  <span>New followers</span>
+                  <strong>{analyticsWindow?.newFollowers || 0}</strong>
+                </p>
+                <p className="profile-page__analytics-window-item">
+                  <span>Watch sessions</span>
+                  <strong>{formatCompactNumber(analyticsWindow?.watchSessions || 0)}</strong>
+                </p>
+                <p className="profile-page__analytics-window-item">
+                  <span>Watch hours</span>
+                  <strong>{analyticsWindow?.watchHours || 0}h</strong>
+                </p>
+              </div>
+            </div>
+
+            <div className="profile-page__analytics-videos">
+              <div className="profile-page__analytics-videos-head">
+                <h3 className="profile-page__analytics-window-title">Top Videos</h3>
+                <p className="profile-page__history-meta">
+                  Ranked by engagement, then views
+                </p>
+              </div>
+              {!analyticsTopVideos.length && (
+                <p className="profile-page__status">No creator videos yet.</p>
+              )}
+              {!!analyticsTopVideos.length && (
+                <div className="profile-page__history-list">
+                  {analyticsTopVideos.map((video) => (
+                    <Link
+                      key={video.id}
+                      className="profile-page__history-item"
+                      to={`/videos/${video.id}`}
+                    >
+                      <img
+                        className="profile-page__history-thumb"
+                        src={video.image}
+                        alt={video.title}
+                      />
+                      <div className="profile-page__history-content">
+                        <h3 className="profile-page__history-title">{video.title}</h3>
+                        <p className="profile-page__history-meta">
+                          {formatCompactNumber(video.views)} views •{" "}
+                          {formatCompactNumber(video.likes)} likes •{" "}
+                          {formatCompactNumber(video.comments)} comments
+                        </p>
+                        <p className="profile-page__history-meta">
+                          {formatPercent(video.completionRatePercent)} completion •{" "}
+                          {video.watchHours || 0}h watch time •{" "}
+                          {formatCompactNumber(video.uniqueViewers)} unique viewers
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="profile-page__card profile-page__card--history">

@@ -108,6 +108,120 @@
   background: rgba(11, 24, 44, 0.8);
 }
 
+.profile-page__card--analytics {
+  background: rgba(10, 23, 42, 0.82);
+}
+
+.profile-page__analytics-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.profile-page__analytics-window {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.profile-page__analytics-window-btn {
+  min-height: 3.2rem;
+  border-radius: 999px;
+  border: 0.1rem solid rgba(132, 187, 255, 0.24);
+  background: rgba(14, 30, 53, 0.75);
+  color: var(--text-main);
+  padding: 0 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.profile-page__analytics-window-btn--active {
+  background: rgba(77, 197, 255, 0.2);
+  border-color: rgba(77, 197, 255, 0.7);
+  color: #bde9ff;
+}
+
+.profile-page__analytics-grid {
+  margin-top: 1.4rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.8rem;
+}
+
+.profile-page__analytics-stat {
+  margin: 0;
+  border: 0.1rem solid rgba(132, 187, 255, 0.2);
+  border-radius: 1.2rem;
+  padding: 0.9rem 1rem;
+  background: rgba(12, 28, 50, 0.74);
+}
+
+.profile-page__analytics-stat-label {
+  margin: 0;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07rem;
+  color: var(--text-muted);
+}
+
+.profile-page__analytics-stat-value {
+  margin: 0.6rem 0 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.profile-page__analytics-window-summary {
+  margin-top: 1.2rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.2);
+  border-radius: 1.2rem;
+  padding: 1rem;
+  background: rgba(12, 28, 50, 0.66);
+}
+
+.profile-page__analytics-window-title {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.profile-page__analytics-window-grid {
+  margin-top: 0.9rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.7rem;
+}
+
+.profile-page__analytics-window-item {
+  margin: 0;
+  padding: 0.8rem;
+  border-radius: 1rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.2);
+  background: rgba(11, 24, 44, 0.75);
+  display: grid;
+  gap: 0.4rem;
+}
+
+.profile-page__analytics-window-item span {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+.profile-page__analytics-window-item strong {
+  font-size: 1.5rem;
+}
+
+.profile-page__analytics-videos {
+  margin-top: 1.4rem;
+}
+
+.profile-page__analytics-videos-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
 .profile-page__history-list {
   margin-top: 1.4rem;
   display: grid;
