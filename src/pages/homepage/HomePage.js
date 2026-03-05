@@ -88,11 +88,114 @@ const formatPublishedDate = (timestamp) => {
   });
 };
 
+const getCommentReplies = (comment = {}) =>
+  Array.isArray(comment.replies) ? comment.replies : [];
+
+const countThreadComments = (comments = []) =>
+  comments.reduce(
+    (count, comment) => count + 1 + countThreadComments(getCommentReplies(comment)),
+    0
+  );
+
+const updateThreadCommentById = (comments = [], targetCommentId = "", updater) =>
+  comments.map((comment) => {
+    const replies = getCommentReplies(comment);
+
+    if (comment.id === targetCommentId) {
+      const updatedComment = updater(comment);
+
+      return {
+        ...updatedComment,
+        replies: getCommentReplies(updatedComment).length
+          ? getCommentReplies(updatedComment)
+          : replies,
+      };
+    }
+
+    return {
+      ...comment,
+      replies: updateThreadCommentById(replies, targetCommentId, updater),
+    };
+  });
+
+const appendReplyToThread = (comments = [], parentCommentId = "", replyComment = null) =>
+  comments.map((comment) => {
+    const replies = getCommentReplies(comment);
+
+    if (comment.id === parentCommentId) {
+      return {
+        ...comment,
+        replies: replyComment ? [...replies, replyComment] : replies,
+      };
+    }
+
+    return {
+      ...comment,
+      replies: appendReplyToThread(replies, parentCommentId, replyComment),
+    };
+  });
+
+const removeThreadCommentById = (comments = [], targetCommentId = "") =>
+  comments
+    .filter((comment) => comment.id !== targetCommentId)
+    .map((comment) => ({
+      ...comment,
+      replies: removeThreadCommentById(getCommentReplies(comment), targetCommentId),
+    }));
+
+const findThreadCommentById = (comments = [], targetCommentId = "") => {
+  for (const comment of comments) {
+    if (comment.id === targetCommentId) {
+      return comment;
+    }
+
+    const nestedComment = findThreadCommentById(
+      getCommentReplies(comment),
+      targetCommentId
+    );
+
+    if (nestedComment) {
+      return nestedComment;
+    }
+  }
+
+  return null;
+};
+
+const collectThreadCommentIds = (comment = null) => {
+  if (!comment?.id) {
+    return [];
+  }
+
+  return [
+    comment.id,
+    ...getCommentReplies(comment).flatMap((reply) => collectThreadCommentIds(reply)),
+  ];
+};
+
+const removeThreadCommentsByIds = (comments = [], targetCommentIds = []) => {
+  const commentIdsToRemove =
+    targetCommentIds instanceof Set
+      ? targetCommentIds
+      : new Set(targetCommentIds);
+
+  return comments
+    .filter((comment) => !commentIdsToRemove.has(comment.id))
+    .map((comment) => ({
+      ...comment,
+      replies: removeThreadCommentsByIds(
+        getCommentReplies(comment),
+        commentIdsToRemove
+      ),
+    }));
+};
+
 function HomePage({ searchQuery }) {
   const [playlist, setPlaylist] = useState([]);
   const [currentVideoDetails, setCurrentVideoDetails] = useState(null);
   const [activeCategory, setActiveCategory] = useState("All");
   const [isPostingComment, setIsPostingComment] = useState(false);
+  const [replyingToCommentId, setReplyingToCommentId] = useState("");
   const [commentFeedback, setCommentFeedback] = useState("");
   const [likingCommentIds, setLikingCommentIds] = useState([]);
   const [deletingCommentIds, setDeletingCommentIds] = useState([]);
@@ -129,6 +232,9 @@ function HomePage({ searchQuery }) {
       .then((response) => {
         setCurrentVideoDetails(response.data);
         setCommentFeedback("");
+        setReplyingToCommentId("");
+        setLikingCommentIds([]);
+        setDeletingCommentIds([]);
       })
       .catch((error) => {
         console.log(error);
@@ -482,6 +588,8 @@ function HomePage({ searchQuery }) {
       likedByCurrentUser: false,
       timestamp: Date.now(),
       userId: user?.id,
+      parentId: "",
+      replies: [],
     };
 
     setCommentFeedback("");
@@ -505,7 +613,9 @@ function HomePage({ searchQuery }) {
 
       mutateCommentsForVideo(videoIdForAction, (comments) =>
         comments.map((comment) =>
-          comment.id === temporaryCommentId ? response.data : comment
+          comment.id === temporaryCommentId
+            ? { ...response.data, replies: getCommentReplies(response.data) }
+            : comment
         )
       );
 
@@ -521,6 +631,99 @@ function HomePage({ searchQuery }) {
         error.response?.status === 401
           ? "Your session expired. Please sign in again."
           : "Could not post your signal. Please try again.";
+
+      setCommentFeedback(failureMessage);
+
+      if (error.response?.status === 401) {
+        navigate("/auth");
+      }
+
+      return false;
+    } finally {
+      setIsPostingComment(false);
+    }
+  };
+
+  const handleReplyComment = async (parentCommentId, commentText) => {
+    if (!currentVideoDetails) {
+      return false;
+    }
+
+    if (!isAuthenticated) {
+      routeToAuth();
+      return false;
+    }
+
+    const trimmedComment = commentText.trim();
+
+    if (!trimmedComment) {
+      setCommentFeedback("Add a reply before posting.");
+      return false;
+    }
+
+    const allComments = currentVideoDetails.comments || [];
+    const parentComment = findThreadCommentById(allComments, parentCommentId);
+
+    if (!parentComment) {
+      setCommentFeedback("This thread is no longer available.");
+      return false;
+    }
+
+    const videoIdForAction = currentVideoDetails.id;
+    const temporaryCommentId = `temp-reply-${Date.now()}`;
+    const optimisticReply = {
+      id: temporaryCommentId,
+      name: user?.name || "You",
+      avatarUrl: user?.avatarUrl || "",
+      comment: trimmedComment,
+      likes: 0,
+      likedByCurrentUser: false,
+      timestamp: Date.now(),
+      userId: user?.id,
+      parentId: parentCommentId,
+      replies: [],
+    };
+
+    setCommentFeedback("");
+    setIsPostingComment(true);
+
+    mutateCommentsForVideo(videoIdForAction, (comments) =>
+      appendReplyToThread(comments, parentCommentId, optimisticReply)
+    );
+
+    try {
+      const response = await axios.post(
+        `${API_URL}videos/${videoIdForAction}/comments`,
+        {
+          comment: trimmedComment,
+          parentId: parentCommentId,
+        },
+        {
+          headers: getAuthHeaders(token),
+        }
+      );
+
+      mutateCommentsForVideo(videoIdForAction, (comments) =>
+        updateThreadCommentById(comments, temporaryCommentId, () => ({
+          ...response.data,
+          replies: getCommentReplies(response.data),
+        }))
+      );
+
+      return true;
+    } catch (error) {
+      console.log(error);
+
+      mutateCommentsForVideo(videoIdForAction, (comments) =>
+        removeThreadCommentById(comments, temporaryCommentId)
+      );
+
+      const failureMessage =
+        error.response?.status === 401
+          ? "Your session expired. Please sign in again."
+          : error.response?.status === 404
+            ? "This thread is no longer available."
+            : "Could not post your reply. Please try again.";
 
       setCommentFeedback(failureMessage);
 
@@ -552,15 +755,8 @@ function HomePage({ searchQuery }) {
     }
 
     const videoIdForAction = currentVideoDetails.id;
-    setCommentFeedback("");
-    setLikingCommentIds((previousIds) => [...previousIds, commentId]);
-
-    mutateCommentsForVideo(videoIdForAction, (comments) =>
-      comments.map((comment) => {
-        if (comment.id !== commentId) {
-          return comment;
-        }
-
+    const applyOptimisticLikeToggle = (comments) =>
+      updateThreadCommentById(comments, commentId, (comment) => {
         const isCurrentlyLiked = Boolean(comment.likedByCurrentUser);
 
         return {
@@ -571,8 +767,12 @@ function HomePage({ searchQuery }) {
           ),
           likedByCurrentUser: !isCurrentlyLiked,
         };
-      })
-    );
+      });
+
+    setCommentFeedback("");
+    setLikingCommentIds((previousIds) => [...previousIds, commentId]);
+
+    mutateCommentsForVideo(videoIdForAction, applyOptimisticLikeToggle);
 
     try {
       const response = await axios.patch(
@@ -584,31 +784,15 @@ function HomePage({ searchQuery }) {
       );
 
       mutateCommentsForVideo(videoIdForAction, (comments) =>
-        comments.map((comment) =>
-          comment.id === commentId ? { ...comment, ...response.data } : comment
-        )
+        updateThreadCommentById(comments, commentId, (comment) => ({
+          ...comment,
+          ...response.data,
+        }))
       );
     } catch (error) {
       console.log(error);
 
-      mutateCommentsForVideo(videoIdForAction, (comments) =>
-        comments.map((comment) => {
-          if (comment.id !== commentId) {
-            return comment;
-          }
-
-          const isCurrentlyLiked = Boolean(comment.likedByCurrentUser);
-
-          return {
-            ...comment,
-            likes: Math.max(
-              0,
-              Number(comment.likes || 0) + (isCurrentlyLiked ? -1 : 1)
-            ),
-            likedByCurrentUser: !isCurrentlyLiked,
-          };
-        })
-      );
+      mutateCommentsForVideo(videoIdForAction, applyOptimisticLikeToggle);
 
       const failureMessage =
         error.response?.status === 401
@@ -646,39 +830,54 @@ function HomePage({ searchQuery }) {
 
     const videoIdForAction = currentVideoDetails.id;
     const allComments = currentVideoDetails.comments || [];
-    const existingCommentIndex = allComments.findIndex(
-      (comment) => comment.id === commentId
-    );
+    const targetComment = findThreadCommentById(allComments, commentId);
 
-    if (existingCommentIndex < 0) {
+    if (!targetComment) {
       return;
     }
 
-    const existingComment = allComments[existingCommentIndex];
+    const targetCommentIds = collectThreadCommentIds(targetComment);
+    const targetCommentIdSet = new Set(targetCommentIds);
+    const previousComments = allComments;
 
     setCommentFeedback("");
-    setDeletingCommentIds((previousIds) => [...previousIds, commentId]);
+    setDeletingCommentIds((previousIds) => [
+      ...previousIds,
+      ...targetCommentIds.filter((id) => !previousIds.includes(id)),
+    ]);
+    setLikingCommentIds((previousIds) =>
+      previousIds.filter((id) => !targetCommentIdSet.has(id))
+    );
+
+    if (targetCommentIdSet.has(replyingToCommentId)) {
+      setReplyingToCommentId("");
+    }
 
     mutateCommentsForVideo(videoIdForAction, (comments) =>
-      comments.filter((comment) => comment.id !== commentId)
+      removeThreadCommentsByIds(comments, targetCommentIds)
     );
 
     try {
-      await axios.delete(`${API_URL}videos/${videoIdForAction}/comments/${commentId}`, {
-        headers: getAuthHeaders(token),
-      });
+      const response = await axios.delete(
+        `${API_URL}videos/${videoIdForAction}/comments/${commentId}`,
+        {
+          headers: getAuthHeaders(token),
+        }
+      );
+
+      const deletedCommentIds = Array.isArray(response.data?.deletedCommentIds)
+        ? response.data.deletedCommentIds
+        : [];
+
+      if (deletedCommentIds.length) {
+        mutateCommentsForVideo(videoIdForAction, (comments) =>
+          removeThreadCommentsByIds(comments, deletedCommentIds)
+        );
+      }
     } catch (error) {
       console.log(error);
 
-      mutateCommentsForVideo(videoIdForAction, (comments) => {
-        if (comments.some((comment) => comment.id === existingComment.id)) {
-          return comments;
-        }
-
-        const restoredComments = [...comments];
-        restoredComments.splice(existingCommentIndex, 0, existingComment);
-        return restoredComments;
-      });
+      mutateCommentsForVideo(videoIdForAction, () => previousComments);
 
       const failureMessage =
         error.response?.status === 401
@@ -694,7 +893,7 @@ function HomePage({ searchQuery }) {
       }
     } finally {
       setDeletingCommentIds((previousIds) =>
-        previousIds.filter((id) => id !== commentId)
+        previousIds.filter((id) => !targetCommentIdSet.has(id))
       );
     }
   };
@@ -840,7 +1039,7 @@ function HomePage({ searchQuery }) {
         <section className="home__primary">
           <Article currentVideoDetails={currentVideoDetails} />
           <Form
-            commentCount={comments.length}
+            commentCount={countThreadComments(comments)}
             onSubmitComment={handleCreateComment}
             isSubmitting={isPostingComment}
             feedbackMessage={commentFeedback}
@@ -850,9 +1049,13 @@ function HomePage({ searchQuery }) {
           <Comments
             comments={comments}
             onLikeComment={handleLikeComment}
+            onReplyComment={handleReplyComment}
             onDeleteComment={handleDeleteComment}
             likingCommentIds={likingCommentIds}
             deletingCommentIds={deletingCommentIds}
+            replyingToCommentId={replyingToCommentId}
+            onSetReplyingToCommentId={setReplyingToCommentId}
+            isPostingComment={isPostingComment}
             currentUserId={user?.id || ""}
             isAuthenticated={isAuthenticated}
             onRequireAuth={routeToAuth}
