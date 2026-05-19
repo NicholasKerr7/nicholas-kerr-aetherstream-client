@@ -52,7 +52,9 @@ const App = () => {
 
   return (
     <div className="app">
-      <BrowserRouter>
+      <BrowserRouter
+        future={{ v7_relativeSplatPath: true, v7_startTransition: true }}
+      >
         <div className="app__ambient-glow" aria-hidden="true" />
         <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
         <main className="app__main">
@@ -92,7 +94,10 @@ const App = () => {
               path="/UploadPage"
               element={<Navigate replace to="/studio/upload" />}
             />
-            <Route path="/upload" element={<Navigate replace to="/studio/upload" />} />
+            <Route
+              path="/upload"
+              element={<Navigate replace to="/studio/upload" />}
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

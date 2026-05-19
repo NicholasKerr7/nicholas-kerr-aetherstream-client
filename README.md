@@ -38,7 +38,13 @@ Captured from the local app with Chrome headless after signing in through the ad
 
 ## Local Development
 
-This client expects the companion API to run on `http://localhost:8080/`. The API URL currently lives in `src/components/utilities/Utilities.js`.
+This client expects the companion API to run on `http://localhost:8080/` by default. To point the client at another API host, create a local env file:
+
+```bash
+cp .env.example .env
+```
+
+Then set `VITE_API_URL` in `.env`. Local env files are gitignored.
 
 Start the API from the sibling server repo:
 
@@ -87,7 +93,7 @@ npm run audit:fix
 
 Dependabot is configured in `.github/dependabot.yml` to check npm dependencies and GitHub Actions weekly. Minor and patch dependency updates are grouped into safe review PRs, while major version upgrades are left for manual review.
 
-GitHub Actions runs tests, a production build, a critical audit gate, and dependency review for pull requests. The static build also includes baseline deployment headers in `public/_headers` for hosts that support header files.
+GitHub Actions runs tests, a production build, a high-severity audit gate, and dependency review for pull requests. The static build also includes baseline deployment headers in `public/_headers` for hosts that support header files.
 
 Before merging dependency updates, run:
 

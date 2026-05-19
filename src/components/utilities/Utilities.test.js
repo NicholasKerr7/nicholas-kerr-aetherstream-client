@@ -2,6 +2,7 @@ import {
   getAuthHeaders,
   getAvatarUrl,
   getInitials,
+  normalizeApiUrl,
   TOKEN_STORAGE_KEY,
 } from "./Utilities";
 
@@ -31,5 +32,16 @@ describe("shared utility helpers", () => {
 
   it("uses a stable token storage key", () => {
     expect(TOKEN_STORAGE_KEY).toBe("aetherstream_auth_token");
+  });
+
+  it("normalizes API base URLs for route concatenation", () => {
+    expect(normalizeApiUrl("https://api.example.com")).toBe(
+      "https://api.example.com/"
+    );
+    expect(normalizeApiUrl(" https://api.example.com/v1/ ")).toBe(
+      "https://api.example.com/v1/"
+    );
+    expect(normalizeApiUrl("")).toBe("http://localhost:8080/");
+    expect(normalizeApiUrl(null)).toBe("http://localhost:8080/");
   });
 });
