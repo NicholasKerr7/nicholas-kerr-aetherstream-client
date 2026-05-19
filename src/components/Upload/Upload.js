@@ -12,6 +12,7 @@ import { useAuth } from "../../context/AuthContext";
 const MAX_TITLE_LENGTH = 70;
 const MAX_DESCRIPTION_LENGTH = 260;
 const MAX_VIDEO_UPLOAD_BYTES = 750 * 1024 * 1024;
+const MAX_THUMBNAIL_UPLOAD_BYTES = 10 * 1024 * 1024;
 const CATEGORY_OPTIONS = [
   "General",
   "Adventure",
@@ -29,6 +30,9 @@ const Upload = () => {
   const [tagsInput, setTagsInput] = useState("");
   const [videoFile, setVideoFile] = useState(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState("");
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadFeedback, setUploadFeedback] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const { isAuthenticated, token } = useAuth();
@@ -51,6 +55,20 @@ const Upload = () => {
       URL.revokeObjectURL(temporaryPreviewUrl);
     };
   }, [videoFile]);
+
+  useEffect(() => {
+    if (!thumbnailFile) {
+      setThumbnailPreviewUrl("");
+      return undefined;
+    }
+
+    const temporaryPreviewUrl = URL.createObjectURL(thumbnailFile);
+    setThumbnailPreviewUrl(temporaryPreviewUrl);
+
+    return () => {
+      URL.revokeObjectURL(temporaryPreviewUrl);
+    };
+  }, [thumbnailFile]);
 
   if (!isAuthenticated) {
     return <Navigate replace to="/auth" />;
@@ -78,7 +96,34 @@ const Upload = () => {
     }
 
     setUploadFeedback("");
+    setUploadProgress(0);
     setVideoFile(selectedFile);
+  };
+
+  const handleThumbnailSelection = (event) => {
+    const selectedFile = event.target.files?.[0];
+
+    if (!selectedFile) {
+      setThumbnailFile(null);
+      return;
+    }
+
+    if (!selectedFile.type.startsWith("image/")) {
+      setUploadFeedback("Please select a valid thumbnail image.");
+      event.target.value = "";
+      return;
+    }
+
+    if (selectedFile.size > MAX_THUMBNAIL_UPLOAD_BYTES) {
+      const maxMb = Math.round(MAX_THUMBNAIL_UPLOAD_BYTES / (1024 * 1024));
+      setUploadFeedback(`Thumbnail image is too large. Max size is ${maxMb}MB.`);
+      event.target.value = "";
+      return;
+    }
+
+    setUploadFeedback("");
+    setUploadProgress(0);
+    setThumbnailFile(selectedFile);
   };
 
   const handleSubmit = async (event) => {
@@ -100,16 +145,34 @@ const Upload = () => {
     uploadVideoFormData.append("tags", normalizedTags.join(","));
     uploadVideoFormData.append("video", videoFile);
 
+    if (thumbnailFile) {
+      uploadVideoFormData.append("thumbnail", thumbnailFile);
+    }
+
     setUploadFeedback("");
+    setUploadProgress(0);
     setIsPublishing(true);
     try {
       await axios.post(`${API_URL}videos`, uploadVideoFormData, {
         headers: getAuthHeaders(token),
+        onUploadProgress: (progressEvent) => {
+          if (!progressEvent.total) {
+            return;
+          }
+
+          const nextProgress = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+
+          setUploadProgress(Math.min(100, Math.max(0, nextProgress)));
+        },
       });
+      setUploadProgress(100);
       alert("Published successfully.");
       NavigateToPage("/");
     } catch (error) {
       console.log(error);
+      setUploadProgress(0);
 
       if (error.response?.status === 401) {
         alert("Your session expired. Please sign in again.");
@@ -135,7 +198,7 @@ const Upload = () => {
           <h2 className="upload__title">Video Thumbnail</h2>
           <video
             className="upload__thumb-img"
-            poster={ThumbnailImg}
+            poster={thumbnailPreviewUrl || ThumbnailImg}
             src={videoPreviewUrl || undefined}
             controls={Boolean(videoPreviewUrl)}
             muted
@@ -163,6 +226,12 @@ const Upload = () => {
                 {videoFile.name} · {(videoFile.size / (1024 * 1024)).toFixed(1)}MB
               </p>
             )}
+            {thumbnailFile && (
+              <p className="upload__file-meta">
+                Thumbnail: {thumbnailFile.name} ·{" "}
+                {(thumbnailFile.size / (1024 * 1024)).toFixed(1)}MB
+              </p>
+            )}
           </div>
         </div>
         <form onSubmit={handleSubmit} className="upload__field">
@@ -177,6 +246,17 @@ const Upload = () => {
             accept="video/*"
             onChange={handleFileSelection}
             required
+          />
+          <label className="upload__title--description" htmlFor="thumbnailFile">
+            Thumbnail Image
+          </label>
+          <input
+            className="upload__file-input"
+            type="file"
+            id="thumbnailFile"
+            name="thumbnailFile"
+            accept="image/*"
+            onChange={handleThumbnailSelection}
           />
           <label className="upload__title--description" htmlFor="videoTitle">
             Video Title
@@ -241,9 +321,37 @@ const Upload = () => {
             placeholder="travel, alps, mountain"
           />
           {uploadFeedback && <p className="upload__feedback">{uploadFeedback}</p>}
+          {(isPublishing || uploadProgress > 0) && (
+            <div className="upload__progress" aria-live="polite">
+              <div className="upload__progress-head">
+                <span>
+                  {uploadProgress >= 100
+                    ? "Processing upload"
+                    : "Uploading media"}
+                </span>
+                <strong>{uploadProgress}%</strong>
+              </div>
+              <div
+                className="upload__progress-track"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow={uploadProgress}
+              >
+                <span
+                  className="upload__progress-bar"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
           <div className="upload__btn-container">
             <button type="submit" className="upload__pub-btn" disabled={isPublishing}>
-              {isPublishing ? "Publishing..." : "Publish"}
+              {isPublishing && uploadProgress < 100
+                ? `Uploading ${uploadProgress}%`
+                : isPublishing
+                  ? "Processing..."
+                  : "Publish"}
             </button>
             <Link to="/" className="upload__cancel-btn">
               Cancel

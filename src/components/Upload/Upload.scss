@@ -133,6 +133,7 @@
 
 .upload__file-input {
   margin-top: 0.8rem;
+  margin-bottom: 1.2rem;
   min-height: 4.6rem;
   border-radius: 1.2rem;
   border: 0.1rem dashed rgba(132, 187, 255, 0.35);
@@ -168,6 +169,44 @@
   margin: 0;
   color: #ffb4bf;
   font-size: 1.3rem;
+}
+
+.upload__progress {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 1.2rem;
+  border: 0.1rem solid rgba(132, 187, 255, 0.2);
+  background: rgba(12, 24, 43, 0.74);
+}
+
+.upload__progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+.upload__progress-head strong {
+  color: var(--text-main);
+}
+
+.upload__progress-track {
+  margin-top: 0.8rem;
+  height: 0.8rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(132, 187, 255, 0.16);
+}
+
+.upload__progress-bar {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(128deg, var(--brand-a), var(--brand-b));
+  transition: width 0.2s ease;
 }
 
 .upload__btn-container {
