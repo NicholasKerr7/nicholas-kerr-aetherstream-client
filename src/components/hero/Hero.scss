@@ -14,10 +14,27 @@
   box-shadow: 0 2.4rem 5.4rem rgba(0, 0, 0, 0.45);
 }
 
-.hero__video {
-  width: 100%;
+.hero__media {
+  position: relative;
   aspect-ratio: 16 / 9;
+  background: #02050c;
+}
+
+.hero__video,
+.hero__poster {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+}
+
+.hero__video {
+  display: block;
+}
+
+.hero__poster {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 .hero__overlay {

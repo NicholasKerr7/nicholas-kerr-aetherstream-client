@@ -1,5 +1,5 @@
 import "./Hero.scss";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 function Hero({
   currentVideoDetails,
@@ -8,6 +8,7 @@ function Hero({
 }) {
   const videoRef = useRef(null);
   const lastAppliedResumeKeyRef = useRef("");
+  const [hasStartedPlayback, setHasStartedPlayback] = useState(false);
   const commentCount = currentVideoDetails.comments.length;
   const activeVideoId = currentVideoDetails.id;
 
@@ -39,6 +40,10 @@ function Hero({
     },
     [activeVideoId, onProgressChange]
   );
+
+  useEffect(() => {
+    setHasStartedPlayback(false);
+  }, [activeVideoId]);
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -87,18 +92,29 @@ function Hero({
   return (
     <section className="hero">
       <div className="hero__container">
-        <video
-          ref={videoRef}
-          className="hero__video"
-          src={currentVideoDetails.video}
-          poster={currentVideoDetails.image}
-          preload="metadata"
-          controls
-          onTimeUpdate={() => emitProgress(false)}
-          onPause={() => emitProgress(true)}
-          onSeeked={() => emitProgress(true)}
-          onEnded={() => emitProgress(true)}
-        />
+        <div className="hero__media">
+          <video
+            ref={videoRef}
+            className="hero__video"
+            src={currentVideoDetails.video}
+            poster={currentVideoDetails.image}
+            preload="metadata"
+            controls
+            onPlay={() => setHasStartedPlayback(true)}
+            onTimeUpdate={() => emitProgress(false)}
+            onPause={() => emitProgress(true)}
+            onSeeked={() => emitProgress(true)}
+            onEnded={() => emitProgress(true)}
+          />
+          {!hasStartedPlayback && (
+            <img
+              className="hero__poster"
+              src={currentVideoDetails.image}
+              alt=""
+              aria-hidden="true"
+            />
+          )}
+        </div>
         <div className="hero__overlay">
           <p className="hero__eyebrow">Now Streaming</p>
           <h2 className="hero__title">{currentVideoDetails.title}</h2>
