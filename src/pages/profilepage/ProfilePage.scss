@@ -31,6 +31,10 @@
   background: rgba(10, 23, 42, 0.82);
 }
 
+.profile-page__card--saved {
+  background: rgba(10, 23, 42, 0.8);
+}
+
 .profile-page__card--history {
   background: rgba(11, 24, 44, 0.8);
 }
@@ -345,6 +349,14 @@
 
   .profile-page__history-list--analytics {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .profile-page__history-list--saved {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .profile-page__history-list--saved .profile-page__history-item {
+    grid-template-columns: 1fr;
   }
 
   .profile-page__history-list--history {

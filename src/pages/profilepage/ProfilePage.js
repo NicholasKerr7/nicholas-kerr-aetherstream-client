@@ -39,6 +39,20 @@ const formatLastWatched = (updatedAt) => {
   });
 };
 
+const formatPublishedDate = (timestamp) => {
+  const numericTimestamp = Number(timestamp);
+
+  if (!numericTimestamp) {
+    return "";
+  }
+
+  return new Date(numericTimestamp).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 const ANALYTICS_WINDOWS = [7, 30, 90];
 
 const formatCompactNumber = (value) =>
@@ -57,6 +71,9 @@ function ProfilePage() {
   const [watchHistory, setWatchHistory] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [historyError, setHistoryError] = useState("");
+  const [savedVideos, setSavedVideos] = useState([]);
+  const [isLoadingSavedVideos, setIsLoadingSavedVideos] = useState(false);
+  const [savedVideosError, setSavedVideosError] = useState("");
   const [selectedAnalyticsWindowDays, setSelectedAnalyticsWindowDays] = useState(30);
   const [creatorAnalytics, setCreatorAnalytics] = useState(null);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
@@ -103,6 +120,37 @@ function ProfilePage() {
     };
 
     loadWatchHistory();
+  }, [isAuthenticated, token]);
+
+  useEffect(() => {
+    const loadSavedVideos = async () => {
+      if (!isAuthenticated || !token) {
+        setIsLoadingSavedVideos(false);
+        setSavedVideos([]);
+        setSavedVideosError("");
+        return;
+      }
+
+      setIsLoadingSavedVideos(true);
+      setSavedVideosError("");
+
+      try {
+        const response = await axios.get(`${API_URL}videos/saved`, {
+          headers: getAuthHeaders(token),
+        });
+
+        setSavedVideos(
+          Array.isArray(response.data?.videos) ? response.data.videos : []
+        );
+      } catch (error) {
+        console.log(error);
+        setSavedVideosError("Saved videos are temporarily unavailable.");
+      } finally {
+        setIsLoadingSavedVideos(false);
+      }
+    };
+
+    loadSavedVideos();
   }, [isAuthenticated, token]);
 
   useEffect(() => {
@@ -374,6 +422,50 @@ function ProfilePage() {
             </>
           )}
         </div>
+      </div>
+
+      <div className="profile-page__card profile-page__card--saved">
+        <p className="profile-page__eyebrow">Library</p>
+        <h2 className="profile-page__title profile-page__title--history">
+          Saved Videos
+        </h2>
+        {savedVideosError && (
+          <p className="profile-page__status">{savedVideosError}</p>
+        )}
+        {!savedVideosError && isLoadingSavedVideos && (
+          <p className="profile-page__status">Loading saved videos...</p>
+        )}
+        {!savedVideosError && !isLoadingSavedVideos && !savedVideos.length && (
+          <p className="profile-page__status">
+            Save videos from the watch page to build your library.
+          </p>
+        )}
+        {!savedVideosError && !isLoadingSavedVideos && !!savedVideos.length && (
+          <div className="profile-page__history-list profile-page__history-list--saved">
+            {savedVideos.map((video) => (
+              <Link
+                key={video.id}
+                className="profile-page__history-item"
+                to={`/videos/${video.id}`}
+              >
+                <img
+                  className="profile-page__history-thumb"
+                  src={video.image}
+                  alt={video.title}
+                />
+                <div className="profile-page__history-content">
+                  <h3 className="profile-page__history-title">{video.title}</h3>
+                  <p className="profile-page__history-channel">{video.channel}</p>
+                  <p className="profile-page__history-meta">
+                    {video.duration || "0:00"}
+                    {formatPublishedDate(video.timestamp) &&
+                      ` • ${formatPublishedDate(video.timestamp)}`}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="profile-page__card profile-page__card--history">

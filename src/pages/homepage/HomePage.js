@@ -97,6 +97,23 @@ const formatPublishedDate = (timestamp) => {
   });
 };
 
+const parseMetric = (value) => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Math.max(0, Math.round(value));
+  }
+
+  if (typeof value !== "string") {
+    return 0;
+  }
+
+  const parsedValue = Number(value.replace(/[^0-9]/g, ""));
+
+  return Number.isFinite(parsedValue) ? Math.max(0, Math.round(parsedValue)) : 0;
+};
+
+const formatMetric = (value) =>
+  new Intl.NumberFormat("en-US").format(Math.max(0, Number(value) || 0));
+
 const getCommentReplies = (comment = {}) =>
   Array.isArray(comment.replies) ? comment.replies : [];
 
@@ -220,6 +237,9 @@ function HomePage({ searchQuery }) {
   const [followingFeedError, setFollowingFeedError] = useState("");
   const [isUpdatingCreatorFollow, setIsUpdatingCreatorFollow] = useState(false);
   const [creatorFollowFeedback, setCreatorFollowFeedback] = useState("");
+  const [isUpdatingVideoLike, setIsUpdatingVideoLike] = useState(false);
+  const [isUpdatingVideoSave, setIsUpdatingVideoSave] = useState(false);
+  const [videoActionFeedback, setVideoActionFeedback] = useState("");
   const lastProgressSyncByVideoIdRef = useRef({});
   const { videoId } = useParams();
   const navigate = useNavigate();
@@ -247,7 +267,10 @@ function HomePage({ searchQuery }) {
         setCurrentVideoDetails(response.data);
         setCommentFeedback("");
         setCreatorFollowFeedback("");
+        setVideoActionFeedback("");
         setIsUpdatingCreatorFollow(false);
+        setIsUpdatingVideoLike(false);
+        setIsUpdatingVideoSave(false);
         setReplyingToCommentId("");
         setLikingCommentIds([]);
         setDeletingCommentIds([]);
@@ -614,6 +637,216 @@ function HomePage({ searchQuery }) {
   const routeToAuth = () => {
     setCommentFeedback("Sign in to interact with the conversation.");
     navigate("/auth");
+  };
+
+  const routeToAuthForVideoAction = (message) => {
+    setVideoActionFeedback(message);
+    navigate("/auth");
+  };
+
+  const handleToggleVideoLike = async () => {
+    if (!currentVideoDetails || isUpdatingVideoLike) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      routeToAuthForVideoAction("Sign in to like videos.");
+      return;
+    }
+
+    const videoIdForAction = currentVideoDetails.id;
+    const previousIsLiked = Boolean(currentVideoDetails.isLikedByCurrentUser);
+    const previousLikes = currentVideoDetails.likes;
+    const previousLikesCount = Number.isFinite(
+      Number(currentVideoDetails.likesCount)
+    )
+      ? Number(currentVideoDetails.likesCount)
+      : parseMetric(currentVideoDetails.likes);
+    const nextIsLiked = !previousIsLiked;
+    const nextLikesCount = Math.max(
+      0,
+      previousLikesCount + (nextIsLiked ? 1 : -1)
+    );
+
+    setVideoActionFeedback("");
+    setIsUpdatingVideoLike(true);
+    setCurrentVideoDetails((previousVideo) => {
+      if (!previousVideo || previousVideo.id !== videoIdForAction) {
+        return previousVideo;
+      }
+
+      return {
+        ...previousVideo,
+        isLikedByCurrentUser: nextIsLiked,
+        likes: formatMetric(nextLikesCount),
+        likesCount: nextLikesCount,
+      };
+    });
+
+    try {
+      const response = await axios.patch(
+        `${API_URL}videos/${videoIdForAction}/like`,
+        {
+          liked: nextIsLiked,
+        },
+        {
+          headers: getAuthHeaders(token),
+        }
+      );
+
+      setCurrentVideoDetails((previousVideo) => {
+        if (!previousVideo || previousVideo.id !== videoIdForAction) {
+          return previousVideo;
+        }
+
+        return {
+          ...previousVideo,
+          isLikedByCurrentUser: Boolean(response.data?.liked),
+          likes: response.data?.likes || previousVideo.likes,
+          likesCount: Number(response.data?.likesCount) || previousVideo.likesCount,
+        };
+      });
+    } catch (error) {
+      console.log(error);
+
+      setCurrentVideoDetails((previousVideo) => {
+        if (!previousVideo || previousVideo.id !== videoIdForAction) {
+          return previousVideo;
+        }
+
+        return {
+          ...previousVideo,
+          isLikedByCurrentUser: previousIsLiked,
+          likes: previousLikes,
+          likesCount: previousLikesCount,
+        };
+      });
+
+      const failureMessage =
+        error.response?.status === 401
+          ? "Your session expired. Please sign in again."
+          : "Could not update this video like.";
+
+      setVideoActionFeedback(failureMessage);
+
+      if (error.response?.status === 401) {
+        navigate("/auth");
+      }
+    } finally {
+      setIsUpdatingVideoLike(false);
+    }
+  };
+
+  const handleToggleVideoSave = async () => {
+    if (!currentVideoDetails || isUpdatingVideoSave) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      routeToAuthForVideoAction("Sign in to save videos.");
+      return;
+    }
+
+    const videoIdForAction = currentVideoDetails.id;
+    const previousIsSaved = Boolean(currentVideoDetails.isSavedByCurrentUser);
+    const nextIsSaved = !previousIsSaved;
+
+    setVideoActionFeedback("");
+    setIsUpdatingVideoSave(true);
+    setCurrentVideoDetails((previousVideo) => {
+      if (!previousVideo || previousVideo.id !== videoIdForAction) {
+        return previousVideo;
+      }
+
+      return {
+        ...previousVideo,
+        isSavedByCurrentUser: nextIsSaved,
+      };
+    });
+
+    try {
+      const response = await axios.patch(
+        `${API_URL}videos/${videoIdForAction}/save`,
+        {
+          saved: nextIsSaved,
+        },
+        {
+          headers: getAuthHeaders(token),
+        }
+      );
+
+      setCurrentVideoDetails((previousVideo) => {
+        if (!previousVideo || previousVideo.id !== videoIdForAction) {
+          return previousVideo;
+        }
+
+        return {
+          ...previousVideo,
+          isSavedByCurrentUser: Boolean(response.data?.saved),
+        };
+      });
+      setVideoActionFeedback(
+        nextIsSaved ? "Saved to your profile." : "Removed from saved videos."
+      );
+    } catch (error) {
+      console.log(error);
+
+      setCurrentVideoDetails((previousVideo) => {
+        if (!previousVideo || previousVideo.id !== videoIdForAction) {
+          return previousVideo;
+        }
+
+        return {
+          ...previousVideo,
+          isSavedByCurrentUser: previousIsSaved,
+        };
+      });
+
+      const failureMessage =
+        error.response?.status === 401
+          ? "Your session expired. Please sign in again."
+          : "Could not update your saved videos.";
+
+      setVideoActionFeedback(failureMessage);
+
+      if (error.response?.status === 401) {
+        navigate("/auth");
+      }
+    } finally {
+      setIsUpdatingVideoSave(false);
+    }
+  };
+
+  const handleShareVideo = async () => {
+    if (!currentVideoDetails) {
+      return;
+    }
+
+    const shareUrl = `${window.location.origin}/videos/${currentVideoDetails.id}`;
+    const sharePayload = {
+      title: currentVideoDetails.title,
+      text: `Watch "${currentVideoDetails.title}" on AetherStream.`,
+      url: shareUrl,
+    };
+
+    setVideoActionFeedback("");
+
+    try {
+      if (navigator.share) {
+        await navigator.share(sharePayload);
+        return;
+      }
+
+      await navigator.clipboard.writeText(shareUrl);
+      setVideoActionFeedback("Video link copied.");
+    } catch (error) {
+      if (error.name === "AbortError") {
+        return;
+      }
+
+      console.log(error);
+      setVideoActionFeedback("Could not share this video.");
+    }
   };
 
   const handleToggleCreatorFollow = async () => {
@@ -1202,8 +1435,14 @@ function HomePage({ searchQuery }) {
           <Article
             currentVideoDetails={currentVideoDetails}
             onToggleCreatorFollow={handleToggleCreatorFollow}
+            onToggleVideoLike={handleToggleVideoLike}
+            onToggleVideoSave={handleToggleVideoSave}
+            onShareVideo={handleShareVideo}
             isUpdatingCreatorFollow={isUpdatingCreatorFollow}
+            isUpdatingVideoLike={isUpdatingVideoLike}
+            isUpdatingVideoSave={isUpdatingVideoSave}
             creatorFollowFeedback={creatorFollowFeedback}
+            videoActionFeedback={videoActionFeedback}
             currentUserId={user?.id || ""}
           />
           <Form
