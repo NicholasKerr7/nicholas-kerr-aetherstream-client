@@ -68,24 +68,31 @@ Use it for development screenshots, profile updates, upload flow checks, analyti
 ```bash
 npm start
 npm run build
+npm run test:ci
 npm run audit
 npm run audit:prod
+npm run audit:ci
 npm run audit:fix
 ```
 
 - `npm start` launches the React development server.
 - `npm run build` creates a production build.
+- `npm run test:ci` runs the Jest suite once for CI.
 - `npm run audit` checks the full dependency tree.
 - `npm run audit:prod` checks production dependencies only.
+- `npm run audit:ci` fails on critical vulnerabilities.
 - `npm run audit:fix` applies npm's available safe audit fixes.
 
 ## Maintenance
 
 Dependabot is configured in `.github/dependabot.yml` to check npm dependencies and GitHub Actions weekly. Minor and patch dependency updates are grouped into safe review PRs, while major version upgrades are left for manual review.
 
+GitHub Actions runs tests, a production build, a critical audit gate, and dependency review for pull requests. The static build also includes baseline deployment headers in `public/_headers` for hosts that support header files.
+
 Before merging dependency updates, run:
 
 ```bash
 npm run build
-npm run audit:prod
+npm run test:ci
+npm run audit:ci
 ```
