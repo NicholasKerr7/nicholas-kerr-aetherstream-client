@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
           headers: getAuthHeaders(token),
         });
         setUser(response.data);
-      } catch (error) {
+      } catch {
         localStorage.removeItem(TOKEN_STORAGE_KEY);
         setToken("");
         setUser(null);

@@ -220,6 +220,7 @@ function Header({ searchQuery, onSearchChange }) {
       </Link>
       <div className="header__controls">
         <label className="header__search" htmlFor="video-search">
+          <span className="header__search-label">Search videos</span>
           <img className="header__search-icon" src={searchIcon} alt="" />
           <input
             id="video-search"

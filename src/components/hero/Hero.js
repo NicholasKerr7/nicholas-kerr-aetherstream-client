@@ -105,7 +105,16 @@ function Hero({
             onPause={() => emitProgress(true)}
             onSeeked={() => emitProgress(true)}
             onEnded={() => emitProgress(true)}
-          />
+          >
+            {currentVideoDetails.captionsUrl && (
+              <track
+                kind="captions"
+                src={currentVideoDetails.captionsUrl}
+                srcLang="en"
+                label="English captions"
+              />
+            )}
+          </video>
           {!hasStartedPlayback && (
             <img
               className="hero__poster"

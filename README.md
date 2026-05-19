@@ -73,6 +73,7 @@ Use it for development screenshots, profile updates, upload flow checks, analyti
 
 ```bash
 npm start
+npm run lint
 npm run build
 npm run test:ci
 npm run audit
@@ -82,6 +83,7 @@ npm run audit:fix
 ```
 
 - `npm start` launches the Vite development server.
+- `npm run lint` runs ESLint with React, Hooks, and accessibility checks.
 - `npm run build` creates a production build.
 - `npm run test:ci` runs the Vitest suite once for CI.
 - `npm run audit` checks the full dependency tree.
