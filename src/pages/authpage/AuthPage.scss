@@ -6,7 +6,7 @@
 
 .auth-page__card {
   width: min(56rem, 100%);
-  padding: 2.2rem;
+  padding: 1.6rem;
   border-radius: 2rem;
   border: 0.1rem solid var(--border-soft);
   background: rgba(9, 21, 39, 0.8);
@@ -24,7 +24,18 @@
 
 .auth-page__title {
   margin: 0.8rem 0 0;
-  font-size: 2.8rem;
+  font-size: 2.4rem;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .auth-page__card {
+    padding: 2.2rem;
+  }
+
+  .auth-page__title {
+    font-size: 2.8rem;
+  }
 }
 
 .auth-page__copy {

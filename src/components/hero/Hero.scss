@@ -45,8 +45,9 @@
 
 .hero__title {
   margin: 0.6rem 0 1rem;
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .hero__chips {
@@ -64,6 +65,8 @@
   border: 0.1rem solid rgba(255, 255, 255, 0.2);
   color: #dbe9ff;
   font-size: 1.2rem;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 @include media-tablet {

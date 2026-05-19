@@ -31,8 +31,11 @@ a {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
+  min-width: 0;
+  max-width: 100%;
 }
 
 img,

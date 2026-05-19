@@ -6,7 +6,7 @@
 
 .notifications-page__panel {
   width: min(78rem, 100%);
-  padding: 2.2rem;
+  padding: 1.4rem;
   border-radius: 2rem;
   border: 0.1rem solid var(--border-soft);
   background: rgba(10, 22, 40, 0.82);
@@ -32,7 +32,8 @@
 
 .notifications-page__title {
   margin: 0.8rem 0 0;
-  font-size: 2.8rem;
+  font-size: 2.4rem;
+  overflow-wrap: anywhere;
 }
 
 .notifications-page__subtitle {
@@ -78,7 +79,7 @@
 .notifications-page__preferences-grid {
   margin-top: 1rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.8rem;
 }
 
@@ -137,6 +138,21 @@
 .notifications-page__item-message {
   margin: 0;
   line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .notifications-page__panel {
+    padding: 2.2rem;
+  }
+
+  .notifications-page__title {
+    font-size: 2.8rem;
+  }
+
+  .notifications-page__preferences-grid {
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
 }
 
 .notifications-page__item-time {

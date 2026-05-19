@@ -41,9 +41,10 @@
 .app__main {
   position: relative;
   z-index: 1;
-  width: min(132rem, calc(100% - 2.4rem));
+  width: min(132rem, calc(100% - 1.6rem));
   margin: 0 auto;
   padding-bottom: 4rem;
+  min-width: 0;
 }
 
 .app__status-panel {
@@ -85,6 +86,7 @@
 .app__not-found-title {
   margin: 1.2rem 0 0.8rem;
   font-size: 3.2rem;
+  overflow-wrap: anywhere;
 }
 
 .app__not-found-copy {

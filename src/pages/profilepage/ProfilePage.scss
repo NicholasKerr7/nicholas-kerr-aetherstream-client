@@ -16,7 +16,7 @@
 
 .profile-page__card {
   width: 100%;
-  padding: 2rem;
+  padding: 1.4rem;
   border-radius: 2rem;
   border: 0.1rem solid var(--border-soft);
   background: rgba(9, 21, 39, 0.8);
@@ -46,7 +46,8 @@
 
 .profile-page__title {
   margin: 0.8rem 0 0;
-  font-size: 2.8rem;
+  font-size: 2.4rem;
+  overflow-wrap: anywhere;
 }
 
 .profile-page__title--history {
@@ -170,7 +171,7 @@
 .profile-page__analytics-grid {
   margin-top: 1.4rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
   gap: 0.8rem;
 }
 
@@ -212,7 +213,7 @@
 .profile-page__analytics-window-grid {
   margin-top: 0.9rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
   gap: 0.7rem;
 }
 
@@ -255,7 +256,7 @@
 
 .profile-page__history-item {
   display: grid;
-  grid-template-columns: minmax(12rem, 16rem) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   gap: 1rem;
   padding: 0.9rem;
   border-radius: 1.2rem;
@@ -283,6 +284,7 @@
 .profile-page__history-title {
   margin: 0;
   font-size: 1.5rem;
+  overflow-wrap: anywhere;
 }
 
 .profile-page__history-channel,

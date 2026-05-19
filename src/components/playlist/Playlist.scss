@@ -1,7 +1,7 @@
 @use "../../styles/partials/mixins" as *;
 
 .playlist {
-  padding: 1.8rem;
+  padding: 1.4rem;
   border-radius: 2rem;
   border: 0.1rem solid var(--border-soft);
   background: rgba(11, 22, 40, 0.72);
@@ -9,7 +9,7 @@
 }
 
 .playlist__header {
-  display: flex;
+  display: grid;
   justify-content: space-between;
   align-items: flex-end;
   gap: 0.8rem;
@@ -25,6 +25,7 @@
   margin: 0;
   font-size: 1.2rem;
   color: var(--text-muted);
+  overflow-wrap: anywhere;
 }
 
 .playlist__feed-modes {
@@ -92,7 +93,7 @@
 
 .playlist__container {
   display: grid;
-  grid-template-columns: auto 11rem minmax(0, 1fr);
+  grid-template-columns: auto minmax(8rem, 10rem) minmax(0, 1fr);
   gap: 1rem;
   align-items: center;
   margin-bottom: 1rem;
@@ -135,6 +136,7 @@
   margin: 0;
   font-size: 1.4rem;
   line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .playlist__author {
@@ -168,5 +170,13 @@
 @include media-tablet {
   .playlist {
     padding: 2rem;
+  }
+
+  .playlist__header {
+    display: flex;
+  }
+
+  .playlist__container {
+    grid-template-columns: auto 11rem minmax(0, 1fr);
   }
 }
