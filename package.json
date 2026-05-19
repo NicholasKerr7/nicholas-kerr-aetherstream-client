@@ -18,6 +18,9 @@
     "start": "node ./node_modules/react-scripts/bin/react-scripts.js start",
     "build": "node ./node_modules/react-scripts/bin/react-scripts.js build",
     "test": "node ./node_modules/react-scripts/bin/react-scripts.js test",
+    "audit": "npm audit",
+    "audit:prod": "npm audit --omit=dev",
+    "audit:fix": "npm audit fix",
     "eject": "node ./node_modules/react-scripts/bin/react-scripts.js eject"
   },
   "eslintConfig": {
