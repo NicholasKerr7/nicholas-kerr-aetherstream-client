@@ -48,7 +48,7 @@ npm install
 npm start
 ```
 
-Start the client from this repo:
+Start the Vite client from this repo:
 
 ```bash
 npm install
@@ -75,12 +75,12 @@ npm run audit:ci
 npm run audit:fix
 ```
 
-- `npm start` launches the React development server.
+- `npm start` launches the Vite development server.
 - `npm run build` creates a production build.
-- `npm run test:ci` runs the Jest suite once for CI.
+- `npm run test:ci` runs the Vitest suite once for CI.
 - `npm run audit` checks the full dependency tree.
 - `npm run audit:prod` checks production dependencies only.
-- `npm run audit:ci` fails on critical vulnerabilities.
+- `npm run audit:ci` fails on high or critical vulnerabilities.
 - `npm run audit:fix` applies npm's available safe audit fixes.
 
 ## Maintenance

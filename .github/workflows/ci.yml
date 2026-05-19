@@ -38,7 +38,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Audit critical vulnerabilities
+      - name: Audit high vulnerabilities
         run: npm run audit:ci
 
   dependency-review:
