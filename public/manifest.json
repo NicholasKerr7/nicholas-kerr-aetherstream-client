@@ -1,0 +1,16 @@
+{
+  "short_name": "AetherStream",
+  "name": "AetherStream",
+  "icons": [
+    {
+      "src": "aetherstream-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#050813",
+  "background_color": "#050813"
+}

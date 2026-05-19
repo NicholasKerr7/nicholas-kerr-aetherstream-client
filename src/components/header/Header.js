@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import "./Header.scss";
 import searchIcon from "../../assets/Icons/search.svg";
+import appLogo from "../../assets/logo/aetherstream-logo.png";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -211,7 +212,7 @@ function Header({ searchQuery, onSearchChange }) {
   return (
     <header className="header">
       <Link to="/" className="header__brand">
-        <span className="header__brand-mark">A</span>
+        <img className="header__brand-mark" src={appLogo} alt="" />
         <div>
           <p className="header__brand-name">AetherStream</p>
           <p className="header__brand-tag">Immersive Video Intelligence</p>

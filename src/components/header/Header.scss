@@ -24,17 +24,12 @@
 }
 
 .header__brand-mark {
-  width: 3.6rem;
-  height: 3.6rem;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.8rem;
-  color: #031224;
-  background: linear-gradient(130deg, var(--brand-a), var(--brand-b));
-  box-shadow: 0 0 2.4rem rgba(77, 197, 255, 0.45);
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1.1rem;
+  object-fit: cover;
+  border: 0.1rem solid rgba(132, 187, 255, 0.32);
+  box-shadow: 0 0 2.8rem rgba(77, 197, 255, 0.45);
 }
 
 .header__brand-name,
