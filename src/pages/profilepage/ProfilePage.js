@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
@@ -54,6 +54,20 @@ const formatPublishedDate = (timestamp) => {
 };
 
 const ANALYTICS_WINDOWS = [7, 30, 90];
+const CATEGORY_OPTIONS = [
+  "General",
+  "Adventure",
+  "Action Sports",
+  "Wellness",
+  "Technology",
+  "Lifestyle",
+];
+const MANAGED_VIDEO_FORM_DEFAULTS = {
+  title: "",
+  description: "",
+  category: "General",
+  tags: "",
+};
 
 const formatCompactNumber = (value) =>
   new Intl.NumberFormat("en-US", { notation: "compact" }).format(
@@ -61,6 +75,16 @@ const formatCompactNumber = (value) =>
   );
 
 const formatPercent = (value) => `${Math.max(0, Math.round(Number(value) || 0))}%`;
+
+const getRequestErrorMessage = (error, fallbackMessage) =>
+  error.response?.data?.message || fallbackMessage;
+
+const buildManagedVideoFormValues = (video = {}) => ({
+  title: video.title || "",
+  description: video.description || "",
+  category: video.category || "General",
+  tags: Array.isArray(video.tags) ? video.tags.join(", ") : "",
+});
 
 function ProfilePage() {
   const { user, token, isAuthenticated, updateProfile } = useAuth();
@@ -74,6 +98,16 @@ function ProfilePage() {
   const [savedVideos, setSavedVideos] = useState([]);
   const [isLoadingSavedVideos, setIsLoadingSavedVideos] = useState(false);
   const [savedVideosError, setSavedVideosError] = useState("");
+  const [creatorVideos, setCreatorVideos] = useState([]);
+  const [isLoadingCreatorVideos, setIsLoadingCreatorVideos] = useState(false);
+  const [creatorVideosError, setCreatorVideosError] = useState("");
+  const [editingVideoId, setEditingVideoId] = useState("");
+  const [editingVideoFields, setEditingVideoFields] = useState(
+    MANAGED_VIDEO_FORM_DEFAULTS
+  );
+  const [isSavingManagedVideo, setIsSavingManagedVideo] = useState(false);
+  const [deletingVideoId, setDeletingVideoId] = useState("");
+  const [managementFeedback, setManagementFeedback] = useState("");
   const [selectedAnalyticsWindowDays, setSelectedAnalyticsWindowDays] = useState(30);
   const [creatorAnalytics, setCreatorAnalytics] = useState(null);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
@@ -153,37 +187,68 @@ function ProfilePage() {
     loadSavedVideos();
   }, [isAuthenticated, token]);
 
+  const loadCreatorVideos = useCallback(async () => {
+    if (!isAuthenticated || !token) {
+      setIsLoadingCreatorVideos(false);
+      setCreatorVideos([]);
+      setCreatorVideosError("");
+      return;
+    }
+
+    setIsLoadingCreatorVideos(true);
+    setCreatorVideosError("");
+
+    try {
+      const response = await axios.get(`${API_URL}videos/mine`, {
+        headers: getAuthHeaders(token),
+      });
+
+      setCreatorVideos(
+        Array.isArray(response.data?.videos) ? response.data.videos : []
+      );
+    } catch (error) {
+      console.log(error);
+      setCreatorVideosError("Your video library is temporarily unavailable.");
+    } finally {
+      setIsLoadingCreatorVideos(false);
+    }
+  }, [isAuthenticated, token]);
+
   useEffect(() => {
-    const loadCreatorAnalytics = async () => {
-      if (!isAuthenticated || !token) {
-        setIsLoadingAnalytics(false);
-        setCreatorAnalytics(null);
-        setAnalyticsError("");
-        return;
-      }
+    loadCreatorVideos();
+  }, [loadCreatorVideos]);
 
-      setIsLoadingAnalytics(true);
+  const loadCreatorAnalytics = useCallback(async () => {
+    if (!isAuthenticated || !token) {
+      setIsLoadingAnalytics(false);
+      setCreatorAnalytics(null);
       setAnalyticsError("");
+      return;
+    }
 
-      try {
-        const response = await axios.get(
-          `${API_URL}creators/me/analytics?windowDays=${selectedAnalyticsWindowDays}`,
-          {
-            headers: getAuthHeaders(token),
-          }
-        );
+    setIsLoadingAnalytics(true);
+    setAnalyticsError("");
 
-        setCreatorAnalytics(response.data || null);
-      } catch (error) {
-        console.log(error);
-        setAnalyticsError("Creator analytics are temporarily unavailable.");
-      } finally {
-        setIsLoadingAnalytics(false);
-      }
-    };
+    try {
+      const response = await axios.get(
+        `${API_URL}creators/me/analytics?windowDays=${selectedAnalyticsWindowDays}`,
+        {
+          headers: getAuthHeaders(token),
+        }
+      );
 
-    loadCreatorAnalytics();
+      setCreatorAnalytics(response.data || null);
+    } catch (error) {
+      console.log(error);
+      setAnalyticsError("Creator analytics are temporarily unavailable.");
+    } finally {
+      setIsLoadingAnalytics(false);
+    }
   }, [isAuthenticated, selectedAnalyticsWindowDays, token]);
+
+  useEffect(() => {
+    loadCreatorAnalytics();
+  }, [loadCreatorAnalytics]);
 
   if (!isAuthenticated) {
     return <Navigate replace to="/auth" />;
@@ -209,6 +274,115 @@ function ProfilePage() {
   const analyticsTopVideos = Array.isArray(creatorAnalytics?.topVideos)
     ? creatorAnalytics.topVideos
     : [];
+
+  const handleStartEditingVideo = (video) => {
+    setEditingVideoId(video.id);
+    setEditingVideoFields(buildManagedVideoFormValues(video));
+    setManagementFeedback("");
+  };
+
+  const handleCancelEditingVideo = () => {
+    setEditingVideoId("");
+    setEditingVideoFields(MANAGED_VIDEO_FORM_DEFAULTS);
+  };
+
+  const handleManagedVideoFieldChange = (field, value) => {
+    setEditingVideoFields((previousFields) => ({
+      ...previousFields,
+      [field]: value,
+    }));
+  };
+
+  const handleUpdateManagedVideo = async (event, videoId) => {
+    event.preventDefault();
+
+    const title = editingVideoFields.title.trim();
+    const description = editingVideoFields.description.trim();
+    const tags = editingVideoFields.tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+
+    if (!title || !description) {
+      setManagementFeedback("Title and description are required.");
+      return;
+    }
+
+    setIsSavingManagedVideo(true);
+    setManagementFeedback("");
+
+    try {
+      const response = await axios.patch(
+        `${API_URL}videos/${videoId}`,
+        {
+          title,
+          description,
+          category: editingVideoFields.category,
+          tags: tags.join(","),
+        },
+        {
+          headers: getAuthHeaders(token),
+        }
+      );
+      const updatedVideo = response.data;
+
+      setCreatorVideos((previousVideos) =>
+        previousVideos.map((video) =>
+          video.id === videoId ? { ...video, ...updatedVideo } : video
+        )
+      );
+      setEditingVideoId("");
+      setEditingVideoFields(MANAGED_VIDEO_FORM_DEFAULTS);
+      setManagementFeedback("Video details updated.");
+      await loadCreatorAnalytics();
+    } catch (error) {
+      console.log(error);
+      setManagementFeedback(
+        getRequestErrorMessage(error, "Could not update this video.")
+      );
+    } finally {
+      setIsSavingManagedVideo(false);
+    }
+  };
+
+  const handleDeleteManagedVideo = async (video) => {
+    const confirmed = window.confirm(
+      `Delete "${video.title}"? This removes the video and its activity.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingVideoId(video.id);
+    setManagementFeedback("");
+
+    try {
+      await axios.delete(`${API_URL}videos/${video.id}`, {
+        headers: getAuthHeaders(token),
+      });
+      setCreatorVideos((previousVideos) =>
+        previousVideos.filter((creatorVideo) => creatorVideo.id !== video.id)
+      );
+      setSavedVideos((previousVideos) =>
+        previousVideos.filter((savedVideo) => savedVideo.id !== video.id)
+      );
+
+      if (editingVideoId === video.id) {
+        handleCancelEditingVideo();
+      }
+
+      setManagementFeedback("Video deleted.");
+      await loadCreatorAnalytics();
+    } catch (error) {
+      console.log(error);
+      setManagementFeedback(
+        getRequestErrorMessage(error, "Could not delete this video.")
+      );
+    } finally {
+      setDeletingVideoId("");
+    }
+  };
 
   return (
     <section className="profile-page">
@@ -422,6 +596,203 @@ function ProfilePage() {
             </>
           )}
         </div>
+      </div>
+
+      <div className="profile-page__card profile-page__card--management">
+        <div className="profile-page__section-head">
+          <div>
+            <p className="profile-page__eyebrow">Creator Studio</p>
+            <h2 className="profile-page__title profile-page__title--history">
+              Your Videos
+            </h2>
+          </div>
+          <Link className="profile-page__section-action" to="/upload">
+            Publish
+          </Link>
+        </div>
+        {managementFeedback && (
+          <p className="profile-page__status">{managementFeedback}</p>
+        )}
+        {creatorVideosError && (
+          <p className="profile-page__status">{creatorVideosError}</p>
+        )}
+        {!creatorVideosError && isLoadingCreatorVideos && (
+          <p className="profile-page__status">Loading your videos...</p>
+        )}
+        {!creatorVideosError && !isLoadingCreatorVideos && !creatorVideos.length && (
+          <p className="profile-page__status">
+            Publish a video to manage metadata and performance from here.
+          </p>
+        )}
+        {!creatorVideosError && !isLoadingCreatorVideos && !!creatorVideos.length && (
+          <div className="profile-page__management-list">
+            {creatorVideos.map((video) => {
+              const isEditing = editingVideoId === video.id;
+              const isDeleting = deletingVideoId === video.id;
+
+              return (
+                <article className="profile-page__management-item" key={video.id}>
+                  <img
+                    className="profile-page__management-thumb"
+                    src={video.image}
+                    alt={video.title}
+                  />
+                  <div className="profile-page__management-content">
+                    <div className="profile-page__management-summary">
+                      <div>
+                        <h3 className="profile-page__history-title">{video.title}</h3>
+                        <p className="profile-page__history-meta">
+                          {video.duration || "0:00"}
+                          {formatPublishedDate(video.timestamp) &&
+                            ` • ${formatPublishedDate(video.timestamp)}`}
+                        </p>
+                      </div>
+                      <div className="profile-page__management-actions">
+                        <Link
+                          className="profile-page__management-btn"
+                          to={`/videos/${video.id}`}
+                        >
+                          View
+                        </Link>
+                        <button
+                          className="profile-page__management-btn"
+                          type="button"
+                          onClick={() => handleStartEditingVideo(video)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="profile-page__management-btn profile-page__management-btn--danger"
+                          type="button"
+                          disabled={isDeleting}
+                          onClick={() => handleDeleteManagedVideo(video)}
+                        >
+                          {isDeleting ? "Deleting..." : "Delete"}
+                        </button>
+                      </div>
+                    </div>
+                    <p className="profile-page__history-meta">
+                      {video.category || "General"} • {video.views || "0"} views •{" "}
+                      {video.likes || "0"} likes • {video.commentsCount || 0} comments
+                    </p>
+                    {!!video.tags?.length && (
+                      <div className="profile-page__tag-list">
+                        {video.tags.map((tag) => (
+                          <span className="profile-page__tag" key={`${video.id}-${tag}`}>
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {isEditing && (
+                      <form
+                        className="profile-page__management-form"
+                        onSubmit={(event) =>
+                          handleUpdateManagedVideo(event, video.id)
+                        }
+                      >
+                        <label className="profile-page__label" htmlFor={`title-${video.id}`}>
+                          Title
+                        </label>
+                        <input
+                          className="profile-page__input"
+                          id={`title-${video.id}`}
+                          value={editingVideoFields.title}
+                          onChange={(event) =>
+                            handleManagedVideoFieldChange("title", event.target.value)
+                          }
+                          required
+                        />
+                        <label
+                          className="profile-page__label"
+                          htmlFor={`description-${video.id}`}
+                        >
+                          Description
+                        </label>
+                        <textarea
+                          className="profile-page__textarea"
+                          id={`description-${video.id}`}
+                          rows={4}
+                          value={editingVideoFields.description}
+                          onChange={(event) =>
+                            handleManagedVideoFieldChange(
+                              "description",
+                              event.target.value
+                            )
+                          }
+                          required
+                        />
+                        <div className="profile-page__management-form-grid">
+                          <div>
+                            <label
+                              className="profile-page__label"
+                              htmlFor={`category-${video.id}`}
+                            >
+                              Category
+                            </label>
+                            <select
+                              className="profile-page__input"
+                              id={`category-${video.id}`}
+                              value={editingVideoFields.category}
+                              onChange={(event) =>
+                                handleManagedVideoFieldChange(
+                                  "category",
+                                  event.target.value
+                                )
+                              }
+                            >
+                              {CATEGORY_OPTIONS.map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label
+                              className="profile-page__label"
+                              htmlFor={`tags-${video.id}`}
+                            >
+                              Tags
+                            </label>
+                            <input
+                              className="profile-page__input"
+                              id={`tags-${video.id}`}
+                              value={editingVideoFields.tags}
+                              onChange={(event) =>
+                                handleManagedVideoFieldChange(
+                                  "tags",
+                                  event.target.value
+                                )
+                              }
+                              placeholder="travel, alps, mountain"
+                            />
+                          </div>
+                        </div>
+                        <div className="profile-page__management-form-actions">
+                          <button
+                            className="profile-page__management-btn profile-page__management-btn--primary"
+                            type="submit"
+                            disabled={isSavingManagedVideo}
+                          >
+                            {isSavingManagedVideo ? "Saving..." : "Save Changes"}
+                          </button>
+                          <button
+                            className="profile-page__management-btn"
+                            type="button"
+                            onClick={handleCancelEditingVideo}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="profile-page__card profile-page__card--saved">
