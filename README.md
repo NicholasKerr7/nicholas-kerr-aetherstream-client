@@ -16,11 +16,11 @@ Futuristic, subtle redesign of the BrainFlix app with a refreshed product identi
 
 ## Screenshots
 
-Captured from the local app with Chrome headless.
+Captured from the local app with Chrome headless after signing in through the admin demo login.
 
-<img src="docs/screenshots/aetherstream-home-desktop.png" alt="AetherStream home page" width="720" />
+<img src="docs/screenshots/aetherstream-admin-desktop.png" alt="AetherStream admin profile on desktop" width="720" />
 
-<img src="docs/screenshots/aetherstream-upload-studio.png" alt="AetherStream access screen" width="720" />
+<img src="docs/screenshots/aetherstream-admin-mobile.png" alt="AetherStream admin profile on mobile" width="360" />
 
 ## Run Locally
 

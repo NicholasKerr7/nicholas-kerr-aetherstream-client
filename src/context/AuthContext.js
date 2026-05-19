@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import {
   API_URL,
@@ -81,6 +81,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const adminLogin = async () => {
+    try {
+      const response = await axios.post(`${API_URL}auth/admin-login`);
+
+      setAuthSession(response.data.token, response.data.user);
+      return response.data.user;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, "Could not sign in as admin."));
+    }
+  };
+
   const logout = () => {
     setAuthSession("", null);
   };
@@ -126,20 +137,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const contextValue = useMemo(
-    () => ({
-      token,
-      user,
-      isAuthenticated: Boolean(token && user),
-      isBootstrapping,
-      signup,
-      login,
-      logout,
-      refreshProfile,
-      updateProfile,
-    }),
-    [token, user, isBootstrapping]
-  );
+  const contextValue = {
+    token,
+    user,
+    isAuthenticated: Boolean(token && user),
+    isBootstrapping,
+    signup,
+    login,
+    adminLogin,
+    logout,
+    refreshProfile,
+    updateProfile,
+  };
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };

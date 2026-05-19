@@ -91,6 +91,40 @@
   color: #ffb4bf;
 }
 
+.auth-page__admin {
+  margin-top: 1.4rem;
+  padding-top: 1.4rem;
+  border-top: 0.1rem solid rgba(132, 187, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.auth-page__admin-label {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08rem;
+}
+
+.auth-page__admin-btn {
+  min-height: 3.8rem;
+  border-radius: 999px;
+  border: 0.1rem solid rgba(132, 187, 255, 0.28);
+  padding: 0 1.2rem;
+  background: rgba(14, 30, 53, 0.78);
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.auth-page__admin-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
 .auth-page__switch {
   margin-top: 1.2rem;
   border: 0;

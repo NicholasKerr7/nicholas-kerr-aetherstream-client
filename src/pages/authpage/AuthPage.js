@@ -11,7 +11,7 @@ const initialFormState = {
 };
 
 function AuthPage() {
-  const { login, signup, isAuthenticated } = useAuth();
+  const { adminLogin, login, signup, isAuthenticated } = useAuth();
   const [mode, setMode] = useState("login");
   const [formData, setFormData] = useState(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,6 +53,20 @@ function AuthPage() {
           avatarUrl: formData.avatarUrl,
         });
       }
+      setFormData(initialFormState);
+    } catch (error) {
+      setErrorMessage(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAdminLogin = async () => {
+    setErrorMessage("");
+    setIsSubmitting(true);
+
+    try {
+      await adminLogin();
       setFormData(initialFormState);
     } catch (error) {
       setErrorMessage(error.message);
@@ -145,6 +159,20 @@ function AuthPage() {
         </form>
 
         {errorMessage && <p className="auth-page__error">{errorMessage}</p>}
+
+        {mode === "login" && (
+          <div className="auth-page__admin">
+            <p className="auth-page__admin-label">Admin Access</p>
+            <button
+              className="auth-page__admin-btn"
+              type="button"
+              disabled={isSubmitting}
+              onClick={handleAdminLogin}
+            >
+              {isSubmitting ? "Signing In..." : "Admin Login"}
+            </button>
+          </div>
+        )}
 
         <button className="auth-page__switch" type="button" onClick={toggleMode}>
           {mode === "login"
